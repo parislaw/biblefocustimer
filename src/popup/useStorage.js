@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
   scriptureEnabled: true,
   translation: 'esv',
   theme: 'random',
+  verseMode: 'daily',
 };
 
 /**

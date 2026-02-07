@@ -14,6 +14,11 @@ const THEMES = [
   { value: 'work', label: 'Work & Diligence' },
 ];
 
+const VERSE_MODES = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'random', label: 'Random' },
+];
+
 export default function SettingsView({ settings, updateSettings, onClose }) {
   const handleChange = (key, value) => {
     updateSettings({ [key]: value });
@@ -134,6 +139,20 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
             {THEMES.map((t) => (
               <option key={t.value} value={t.value}>
                 {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="setting-row">
+          <span>Verse cadence</span>
+          <select
+            value={settings.verseMode || 'daily'}
+            onChange={(e) => handleChange('verseMode', e.target.value)}
+          >
+            {VERSE_MODES.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
               </option>
             ))}
           </select>
