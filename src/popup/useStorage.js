@@ -45,6 +45,13 @@ export function useSettings() {
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.local.set({ settings: merged });
+      // Notify background so it can update its cached settings
+      if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage(
+          { type: 'SETTINGS_UPDATED', settings: merged },
+          () => {} // ignore response
+        );
+      }
     } else {
       try {
         localStorage.setItem('selah-settings', JSON.stringify(merged));

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettings } from './useStorage';
 import { useTimer } from './useTimer';
 import { useVerse } from './useVerse';
@@ -14,7 +14,20 @@ export default function App() {
   const timer = useTimer(settings);
   const verse = useVerse(settings);
 
-  if (!loaded) {
+  // When popup opens into a break or preFocus phase, load a verse
+  useEffect(() => {
+    if (!timer.ready) return;
+    if (
+      (timer.phase === 'break' || timer.phase === 'preFocus') &&
+      settings.scriptureEnabled &&
+      !verse.currentVerse
+    ) {
+      verse.selectVerse();
+      verse.selectReflection(timer.phase === 'break' ? 'break' : 'preFocus');
+    }
+  }, [timer.ready, timer.phase]);
+
+  if (!loaded || !timer.ready) {
     return (
       <div className="app loading">
         <div className="loading-text">Selah...</div>

@@ -1,132 +1,106 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
- * Timer states:
- * - idle: no timer running, initial state
- * - preFocus: showing verse before focus begins
- * - focus: focus session active
- * - break: short or long break
+ * useTimer — thin client that syncs with background service worker.
+ *
+ * The background owns all timer state. This hook:
+ * 1. Fetches initial state via GET_STATE on mount
+ * 2. Listens for STATE_UPDATE broadcasts from background
+ * 3. Sends commands (START_FOCUS, PAUSE, etc.) and applies the response
  */
 export function useTimer(settings) {
-  const [phase, setPhase] = useState('idle'); // idle | preFocus | focus | break
+  const [phase, setPhase] = useState('idle');
   const [secondsLeft, setSecondsLeft] = useState(settings.focusDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [cycleCount, setCycleCount] = useState(0);
   const [isLongBreak, setIsLongBreak] = useState(false);
-  const intervalRef = useRef(null);
+  const [ready, setReady] = useState(false);
 
-  // Sync secondsLeft when settings change and timer is idle
-  useEffect(() => {
-    if (phase === 'idle') {
-      setSecondsLeft(settings.focusDuration * 60);
-    }
-  }, [settings.focusDuration, phase]);
-
-  // Main countdown
-  useEffect(() => {
-    if (isRunning && secondsLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setSecondsLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(intervalRef.current);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isRunning, secondsLeft]);
-
-  // Handle timer reaching zero
-  useEffect(() => {
-    if (secondsLeft === 0 && isRunning) {
-      setIsRunning(false);
-      onTimerComplete();
-    }
-  }, [secondsLeft, isRunning]);
-
-  const onTimerComplete = () => {
-    // Notify background service worker
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-      chrome.runtime.sendMessage({ type: 'TIMER_COMPLETE', phase });
-    }
-
-    if (phase === 'focus') {
-      const newCycleCount = cycleCount + 1;
-      setCycleCount(newCycleCount);
-
-      const shouldLongBreak =
-        settings.cyclesBeforeLongBreak > 0 &&
-        newCycleCount % settings.cyclesBeforeLongBreak === 0;
-
-      setIsLongBreak(shouldLongBreak);
-
-      const breakDuration = shouldLongBreak
-        ? settings.longBreakDuration
-        : settings.shortBreakDuration;
-
-      setPhase('break');
-      setSecondsLeft(breakDuration * 60);
-
-      if (settings.autoStartNext) {
-        setIsRunning(true);
-      }
-    } else if (phase === 'break') {
-      setPhase('idle');
-      setSecondsLeft(settings.focusDuration * 60);
-
-      if (settings.autoStartNext) {
-        startFocusSession();
-      }
-    }
-  };
-
-  const startFocusSession = useCallback(() => {
-    if (settings.scriptureEnabled) {
-      setPhase('preFocus');
-      setIsRunning(false);
-    } else {
-      setPhase('focus');
-      setSecondsLeft(settings.focusDuration * 60);
-      setIsRunning(true);
-    }
-  }, [settings]);
-
-  const beginFocusFromPreFocus = useCallback(() => {
-    setPhase('focus');
-    setSecondsLeft(settings.focusDuration * 60);
-    setIsRunning(true);
-  }, [settings.focusDuration]);
-
-  const pause = useCallback(() => {
-    setIsRunning(false);
+  // Apply a state snapshot from the background
+  const applyState = useCallback((s) => {
+    if (!s) return;
+    setPhase(s.phase);
+    setSecondsLeft(s.secondsLeft);
+    setIsRunning(s.isRunning);
+    setCycleCount(s.cycleCount);
+    setIsLongBreak(s.isLongBreak);
   }, []);
 
-  const resume = useCallback(() => {
-    if (secondsLeft > 0 && (phase === 'focus' || phase === 'break')) {
-      setIsRunning(true);
+  // Send a message to the background and apply the returned state
+  const send = useCallback((msg) => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage(msg, (response) => {
+        if (response && response.state) {
+          applyState(response.state);
+        }
+      });
     }
-  }, [secondsLeft, phase]);
+  }, [applyState]);
+
+  // Fetch state on mount
+  useEffect(() => {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage({ type: 'GET_STATE' }, (response) => {
+        if (response && response.state) {
+          applyState(response.state);
+        }
+        setReady(true);
+      });
+    } else {
+      // Fallback for non-extension environments
+      setReady(true);
+    }
+  }, [applyState]);
+
+  // Listen for broadcasts from background
+  useEffect(() => {
+    const listener = (message) => {
+      if (message.type === 'STATE_UPDATE' && message.state) {
+        applyState(message.state);
+      }
+    };
+
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener(listener);
+      return () => chrome.runtime.onMessage.removeListener(listener);
+    }
+  }, [applyState]);
+
+  // Local tick for smooth UI updates while popup is open
+  useEffect(() => {
+    if (!isRunning || secondsLeft <= 0) return;
+
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isRunning, secondsLeft <= 0]);
+
+  // --- Commands ---
+  const startFocusSession = useCallback(() => {
+    send({ type: 'START_FOCUS' });
+  }, [send]);
+
+  const beginFocusFromPreFocus = useCallback(() => {
+    send({ type: 'BEGIN_FOCUS' });
+  }, [send]);
+
+  const pause = useCallback(() => {
+    send({ type: 'PAUSE' });
+  }, [send]);
+
+  const resume = useCallback(() => {
+    send({ type: 'RESUME' });
+  }, [send]);
 
   const reset = useCallback(() => {
-    setIsRunning(false);
-    setPhase('idle');
-    setSecondsLeft(settings.focusDuration * 60);
-    setCycleCount(0);
-    setIsLongBreak(false);
-  }, [settings.focusDuration]);
+    send({ type: 'RESET' });
+  }, [send]);
 
   const skipBreak = useCallback(() => {
-    setIsRunning(false);
-    setPhase('idle');
-    setSecondsLeft(settings.focusDuration * 60);
-  }, [settings.focusDuration]);
+    send({ type: 'SKIP_BREAK' });
+  }, [send]);
 
   return {
     phase,
@@ -134,6 +108,7 @@ export function useTimer(settings) {
     isRunning,
     cycleCount,
     isLongBreak,
+    ready,
     startFocusSession,
     beginFocusFromPreFocus,
     pause,
