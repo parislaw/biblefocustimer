@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS = {
   translation: 'esv',
   theme: 'random',
   verseMode: 'daily',
+  soundEnabled: true,
 };
 
 // --- Timer State ---
@@ -118,6 +119,7 @@ function onTimerComplete() {
     state.secondsLeft = breakDuration * 60;
 
     showNotification('Focus session complete', 'Well done. Time for a break.');
+    playSound('sounds/focus-complete.wav');
 
     if (settings.autoStartNext) {
       state.isRunning = true;
@@ -126,6 +128,7 @@ function onTimerComplete() {
     }
   } else if (state.phase === 'break') {
     showNotification('Break is over', 'Ready for another focus session?');
+    playSound('sounds/break-complete.wav');
 
     state.phase = 'idle';
     state.secondsLeft = settings.focusDuration * 60;
@@ -282,6 +285,47 @@ function updateBadgeTime() {
     chrome.action.setBadgeBackgroundColor({ color: '#8FA7C4' });
   } else {
     chrome.action.setBadgeText({ text: '' });
+  }
+}
+
+// --- Sound playback via offscreen document ---
+let creatingOffscreen = null;
+
+async function ensureOffscreen() {
+  if (typeof chrome.offscreen === 'undefined') return false;
+  const contexts = await chrome.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT'],
+  });
+  if (contexts.length > 0) return true;
+
+  if (creatingOffscreen) {
+    await creatingOffscreen;
+    return true;
+  }
+
+  creatingOffscreen = chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: ['AUDIO_PLAYBACK'],
+    justification: 'Play chime sound when timer completes',
+  });
+  await creatingOffscreen;
+  creatingOffscreen = null;
+  return true;
+}
+
+async function playSound(soundFile) {
+  if (!settings.soundEnabled) return;
+  try {
+    const ready = await ensureOffscreen();
+    if (ready) {
+      chrome.runtime.sendMessage({
+        type: 'PLAY_SOUND',
+        sound: soundFile,
+        volume: 0.7,
+      }).catch(() => {});
+    }
+  } catch (e) {
+    // Offscreen not supported or failed — silent fallback
   }
 }
 

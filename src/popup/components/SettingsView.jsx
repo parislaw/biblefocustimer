@@ -102,6 +102,15 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
             onChange={(e) => handleChange('autoStartNext', e.target.checked)}
           />
         </label>
+
+        <label className="setting-row">
+          <span>Sound on completion</span>
+          <input
+            type="checkbox"
+            checked={settings.soundEnabled !== false}
+            onChange={(e) => handleChange('soundEnabled', e.target.checked)}
+          />
+        </label>
       </div>
 
       <div className="settings-section">

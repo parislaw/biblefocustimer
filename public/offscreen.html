@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Selah Focus Audio</title></head>
+<body>
+<script>
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'PLAY_SOUND' && message.sound) {
+      const audio = new Audio(message.sound);
+      audio.volume = message.volume || 0.7;
+      audio.play().catch(() => {});
+    }
+  });
+</script>
+</body>
+</html>

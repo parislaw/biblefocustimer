@@ -10,6 +10,7 @@ describe('DEFAULT_SETTINGS', () => {
     expect(DEFAULT_SETTINGS.longBreakDuration).toBe(15);
     expect(DEFAULT_SETTINGS.cyclesBeforeLongBreak).toBe(4);
     expect(typeof DEFAULT_SETTINGS.autoStartNext).toBe('boolean');
+    expect(DEFAULT_SETTINGS.soundEnabled).toBe(true);
   });
 
   test('has all required scripture settings', () => {

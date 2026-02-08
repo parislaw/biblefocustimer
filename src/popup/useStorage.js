@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS = {
   translation: 'esv',
   theme: 'random',
   verseMode: 'daily',
+  soundEnabled: true,
 };
 
 /**
