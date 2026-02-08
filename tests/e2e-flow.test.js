@@ -45,6 +45,9 @@ const chrome = {
     clear: jest.fn(),
     onAlarm: { addListener: jest.fn() },
   },
+  commands: {
+    onCommand: { addListener: jest.fn() },
+  },
   action: {
     setBadgeText: jest.fn(),
     setBadgeBackgroundColor: jest.fn(),

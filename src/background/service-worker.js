@@ -100,6 +100,29 @@ function stopAlarm() {
   chrome.alarms.clear(ALARM_NAME);
 }
 
+// --- Keyboard shortcut (pause/resume only) ---
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'toggle-timer') {
+    if (state.isRunning && (state.phase === 'focus' || state.phase === 'break')) {
+      // Pause
+      state.isRunning = false;
+      if (state.endTime) {
+        state.secondsLeft = Math.max(0, Math.round((state.endTime - Date.now()) / 1000));
+      }
+      state.endTime = null;
+      stopAlarm();
+    } else if (!state.isRunning && state.secondsLeft > 0 && (state.phase === 'focus' || state.phase === 'break')) {
+      // Resume
+      state.isRunning = true;
+      state.endTime = Date.now() + state.secondsLeft * 1000;
+      startAlarm();
+    }
+    persistState();
+    broadcastState();
+    updateBadgeTime();
+  }
+});
+
 // --- Timer completion logic ---
 function onTimerComplete() {
   if (state.phase === 'focus') {

@@ -24,5 +24,13 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "commands": {
+    "toggle-timer": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "Pause or resume the current timer"
+    }
   }
 }
