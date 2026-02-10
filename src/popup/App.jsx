@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSettings } from './useStorage';
 import { useTimer } from './useTimer';
 import { useVerse } from './useVerse';
@@ -8,11 +8,92 @@ import FocusView from './components/FocusView';
 import BreakView from './components/BreakView';
 import SettingsView from './components/SettingsView';
 
+function isFormElement(target) {
+  if (!target || !target.tagName) return false;
+  const tag = target.tagName.toLowerCase();
+  const role = (target.getAttribute && target.getAttribute('role')) || '';
+  return tag === 'input' || tag === 'select' || tag === 'textarea' || role === 'combobox' || target.isContentEditable;
+}
+
 export default function App() {
   const { settings, updateSettings, loaded } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   const timer = useTimer(settings);
   const verse = useVerse(settings);
+
+  const handleStartFocus = useCallback(() => {
+    verse.selectVerse();
+    verse.selectReflection('preFocus');
+    timer.startFocusSession();
+  }, [verse, timer]);
+
+  const handleBeginFocus = useCallback(() => {
+    timer.beginFocusFromPreFocus();
+  }, [timer]);
+
+  const handleBreakVerse = useCallback(() => {
+    if (settings.scriptureEnabled) {
+      verse.selectVerse();
+      verse.selectReflection('break');
+    }
+  }, [settings.scriptureEnabled, verse]);
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    const handleKeyDown = (e) => {
+      if (isFormElement(e.target)) return;
+
+      if (showSettings) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setShowSettings(false);
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case ' ':
+          e.preventDefault();
+          if (timer.phase === 'focus' || timer.phase === 'break') {
+            if (timer.isRunning) timer.pause();
+            else timer.resume();
+          }
+          break;
+        case 'r':
+        case 'R':
+          if (timer.phase === 'focus') {
+            e.preventDefault();
+            timer.reset();
+          }
+          break;
+        case 's':
+        case 'S':
+          if (e.altKey) {
+            e.preventDefault();
+            setShowSettings(true);
+          } else if (timer.phase === 'break') {
+            e.preventDefault();
+            timer.skipBreak();
+          }
+          break;
+        case 'Enter':
+          if (timer.phase === 'idle') {
+            e.preventDefault();
+            handleStartFocus();
+          } else if (timer.phase === 'preFocus') {
+            e.preventDefault();
+            handleBeginFocus();
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [loaded, showSettings, timer, handleStartFocus, handleBeginFocus]);
 
   if (!loaded) {
     return (
@@ -33,23 +114,6 @@ export default function App() {
       </div>
     );
   }
-
-  const handleStartFocus = () => {
-    verse.selectVerse();
-    verse.selectReflection('preFocus');
-    timer.startFocusSession();
-  };
-
-  const handleBeginFocus = () => {
-    timer.beginFocusFromPreFocus();
-  };
-
-  const handleBreakVerse = () => {
-    if (settings.scriptureEnabled) {
-      verse.selectVerse();
-      verse.selectReflection('break');
-    }
-  };
 
   return (
     <div className={`app phase-${timer.phase}`}>
