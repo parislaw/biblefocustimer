@@ -22,36 +22,35 @@ export function useTimer(settings) {
     }
   }, [settings.focusDuration, phase]);
 
-  // Main countdown
+  // Main countdown - only depends on isRunning to prevent recreating interval on every tick
   useEffect(() => {
-    if (isRunning && secondsLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setSecondsLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(intervalRef.current);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (!isRunning) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
     }
+
+    intervalRef.current = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [isRunning, secondsLeft]);
+  }, [isRunning]);
 
-  // Handle timer reaching zero
-  useEffect(() => {
-    if (secondsLeft === 0 && isRunning) {
-      setIsRunning(false);
-      onTimerComplete();
-    }
-  }, [secondsLeft, isRunning]);
-
-  const onTimerComplete = () => {
+  // Handle timer reaching zero with proper dependencies
+  const onTimerComplete = useCallback(() => {
     // Notify background service worker
     if (typeof chrome !== 'undefined' && chrome.runtime) {
       chrome.runtime.sendMessage({ type: 'TIMER_COMPLETE', phase });
@@ -85,7 +84,15 @@ export function useTimer(settings) {
         startFocusSession();
       }
     }
-  };
+  }, [phase, cycleCount, settings, startFocusSession]);
+
+  // Detect when timer reaches zero and call completion handler
+  useEffect(() => {
+    if (secondsLeft === 0 && isRunning) {
+      setIsRunning(false);
+      onTimerComplete();
+    }
+  }, [secondsLeft, isRunning, onTimerComplete]);
 
   const startFocusSession = useCallback(() => {
     if (settings.scriptureEnabled) {
@@ -126,6 +133,7 @@ export function useTimer(settings) {
     setIsRunning(false);
     setPhase('idle');
     setSecondsLeft(settings.focusDuration * 60);
+    setIsLongBreak(false);
   }, [settings.focusDuration]);
 
   return {

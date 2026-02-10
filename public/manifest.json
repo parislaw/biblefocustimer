@@ -3,9 +3,11 @@
   "name": "Selah Focus",
   "version": "1.0.0",
   "description": "A Pomodoro timer with Scripture-based focus rhythms. Work deeply, anchored in the Word.",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' 'unsafe-inline';"
+  },
   "permissions": [
     "storage",
-    "alarms",
     "notifications"
   ],
   "action": {

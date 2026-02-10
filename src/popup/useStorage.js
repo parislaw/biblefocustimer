@@ -21,7 +21,9 @@ export function useSettings() {
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.local.get('settings', (result) => {
-        if (result.settings) {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to load settings from Chrome storage:', chrome.runtime.lastError);
+        } else if (result.settings) {
           setSettings({ ...DEFAULT_SETTINGS, ...result.settings });
         }
         setLoaded(true);
@@ -33,7 +35,7 @@ export function useSettings() {
           setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
         }
       } catch (e) {
-        // ignore
+        console.error('Failed to load settings from localStorage:', e);
       }
       setLoaded(true);
     }
@@ -44,12 +46,19 @@ export function useSettings() {
     setSettings(merged);
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ settings: merged });
+      chrome.storage.local.set({ settings: merged }, () => {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to save settings to Chrome storage:', chrome.runtime.lastError);
+        }
+      });
     } else {
       try {
         localStorage.setItem('selah-settings', JSON.stringify(merged));
       } catch (e) {
-        // ignore
+        console.error('Failed to save settings to localStorage:', e);
+        if (e.name === 'QuotaExceededError') {
+          console.error('Storage quota exceeded. Please clear browser data.');
+        }
       }
     }
   };

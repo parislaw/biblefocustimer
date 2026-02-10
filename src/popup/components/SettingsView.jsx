@@ -15,16 +15,55 @@ const THEMES = [
 ];
 
 export default function SettingsView({ settings, updateSettings, onClose }) {
+  const validateNumericInput = (value, min, max, defaultValue) => {
+    const parsed = parseInt(value);
+    if (isNaN(parsed) || parsed < min) {
+      return min;
+    }
+    if (parsed > max) {
+      return max;
+    }
+    return parsed;
+  };
+
   const handleChange = (key, value) => {
-    updateSettings({ [key]: value });
+    // Validate numeric inputs
+    let validatedValue = value;
+
+    if (key === 'focusDuration') {
+      validatedValue = validateNumericInput(value, 1, 120, 25);
+    } else if (key === 'shortBreakDuration') {
+      validatedValue = validateNumericInput(value, 1, 30, 5);
+    } else if (key === 'longBreakDuration') {
+      validatedValue = validateNumericInput(value, 1, 60, 15);
+    } else if (key === 'cyclesBeforeLongBreak') {
+      validatedValue = validateNumericInput(value, 0, 10, 4);
+    }
+
+    updateSettings({ [key]: validatedValue });
   };
 
   return (
-    <div className="view settings-view">
+    <div className="view settings-view" role="main" aria-label="Settings">
       <header className="settings-header">
         <h2 className="view-heading">Settings</h2>
-        <button className="btn-icon" onClick={onClose} title="Close">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button
+          className="btn-icon"
+          onClick={onClose}
+          aria-label="Close settings"
+          title="Close settings (Escape)"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -34,88 +73,112 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
       <div className="settings-section">
         <h3 className="settings-section-title">Timer</h3>
 
-        <label className="setting-row">
-          <span>Focus duration</span>
+        <label className="setting-row" htmlFor="focus-duration">
+          <span id="focus-duration-label">Focus duration</span>
           <div className="setting-input-group">
             <input
+              id="focus-duration"
               type="number"
               min="1"
               max="120"
               value={settings.focusDuration}
-              onChange={(e) => handleChange('focusDuration', parseInt(e.target.value) || 25)}
+              onChange={(e) => handleNumericChange('focusDuration', e.target.value, 1, 120, 25)}
+              aria-labelledby="focus-duration-label"
+              aria-describedby="focus-duration-help"
             />
-            <span className="setting-unit">min</span>
+            <span className="setting-unit" id="focus-duration-help">min</span>
           </div>
         </label>
 
-        <label className="setting-row">
-          <span>Short break</span>
+        <label className="setting-row" htmlFor="short-break">
+          <span id="short-break-label">Short break</span>
           <div className="setting-input-group">
             <input
+              id="short-break"
               type="number"
               min="1"
               max="30"
               value={settings.shortBreakDuration}
-              onChange={(e) => handleChange('shortBreakDuration', parseInt(e.target.value) || 5)}
+              onChange={(e) => handleNumericChange('shortBreakDuration', e.target.value, 1, 30, 5)}
+              aria-labelledby="short-break-label"
+              aria-describedby="short-break-help"
             />
-            <span className="setting-unit">min</span>
+            <span className="setting-unit" id="short-break-help">min</span>
           </div>
         </label>
 
-        <label className="setting-row">
-          <span>Long break</span>
+        <label className="setting-row" htmlFor="long-break">
+          <span id="long-break-label">Long break</span>
           <div className="setting-input-group">
             <input
+              id="long-break"
               type="number"
               min="1"
               max="60"
               value={settings.longBreakDuration}
-              onChange={(e) => handleChange('longBreakDuration', parseInt(e.target.value) || 15)}
+              onChange={(e) => handleNumericChange('longBreakDuration', e.target.value, 1, 60, 15)}
+              aria-labelledby="long-break-label"
+              aria-describedby="long-break-help"
             />
-            <span className="setting-unit">min</span>
+            <span className="setting-unit" id="long-break-help">min</span>
           </div>
         </label>
 
-        <label className="setting-row">
-          <span>Cycles before long break</span>
+        <label className="setting-row" htmlFor="cycles-before-long">
+          <span id="cycles-label">Cycles before long break</span>
           <div className="setting-input-group">
             <input
+              id="cycles-before-long"
               type="number"
               min="0"
               max="10"
               value={settings.cyclesBeforeLongBreak}
-              onChange={(e) => handleChange('cyclesBeforeLongBreak', parseInt(e.target.value) || 4)}
+              onChange={(e) => handleNumericChange('cyclesBeforeLongBreak', e.target.value, 0, 10, 4)}
+              aria-labelledby="cycles-label"
+              aria-describedby="cycles-help"
             />
+            <span className="setting-unit" id="cycles-help">(0 to disable)</span>
           </div>
         </label>
 
-        <label className="setting-row">
-          <span>Auto-start next session</span>
+        <label className="setting-row" htmlFor="auto-start-toggle">
+          <span id="auto-start-label">Auto-start next session</span>
           <input
+            id="auto-start-toggle"
             type="checkbox"
             checked={settings.autoStartNext}
             onChange={(e) => handleChange('autoStartNext', e.target.checked)}
+            aria-labelledby="auto-start-label"
+            aria-describedby="auto-start-help"
           />
+          <span className="sr-only" id="auto-start-help">Enable to automatically start the next session when the current one ends</span>
         </label>
       </div>
 
       <div className="settings-section">
         <h3 className="settings-section-title">Scripture</h3>
 
-        <label className="setting-row">
-          <span>Show Scripture</span>
+        <label className="setting-row" htmlFor="scripture-toggle">
+          <span id="scripture-label">Show Scripture</span>
           <input
+            id="scripture-toggle"
             type="checkbox"
             checked={settings.scriptureEnabled}
             onChange={(e) => handleChange('scriptureEnabled', e.target.checked)}
+            aria-labelledby="scripture-label"
+            aria-describedby="scripture-help"
           />
+          <span className="sr-only" id="scripture-help">Enable to display Bible verses and reflections during focus sessions</span>
         </label>
 
-        <label className="setting-row">
-          <span>Translation</span>
+        <label className="setting-row" htmlFor="translation-select">
+          <span id="translation-label">Translation</span>
           <select
+            id="translation-select"
             value={settings.translation}
             onChange={(e) => handleChange('translation', e.target.value)}
+            aria-labelledby="translation-label"
+            disabled={!settings.scriptureEnabled}
           >
             {TRANSLATIONS.map((t) => (
               <option key={t.value} value={t.value}>
@@ -125,11 +188,14 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
           </select>
         </label>
 
-        <label className="setting-row">
-          <span>Theme</span>
+        <label className="setting-row" htmlFor="theme-select">
+          <span id="theme-label">Theme</span>
           <select
+            id="theme-select"
             value={settings.theme}
             onChange={(e) => handleChange('theme', e.target.value)}
+            aria-labelledby="theme-label"
+            disabled={!settings.scriptureEnabled}
           >
             {THEMES.map((t) => (
               <option key={t.value} value={t.value}>

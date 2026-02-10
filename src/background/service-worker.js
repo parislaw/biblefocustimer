@@ -5,9 +5,28 @@
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'TIMER_COMPLETE') {
-    handleTimerComplete(message.phase);
+  // Verify message is from this extension, not external
+  if (!sender.id || sender.id !== chrome.runtime.id) {
+    console.warn('Rejected message from unauthorized sender:', sender);
+    return false;
   }
+
+  // Validate message structure
+  if (!message || typeof message !== 'object' || !message.type) {
+    console.warn('Rejected malformed message:', message);
+    return false;
+  }
+
+  if (message.type === 'TIMER_COMPLETE') {
+    // Validate phase is expected value
+    const validPhases = ['focus', 'break'];
+    if (validPhases.includes(message.phase)) {
+      handleTimerComplete(message.phase);
+    } else {
+      console.warn('Invalid phase received:', message.phase);
+    }
+  }
+
   return false;
 });
 
@@ -34,6 +53,10 @@ function showNotification(title, message) {
     title: title,
     message: message,
     silent: false,
+  }, (notificationId) => {
+    if (chrome.runtime.lastError) {
+      console.error('Failed to create notification:', chrome.runtime.lastError);
+    }
   });
 }
 
