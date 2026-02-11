@@ -77,6 +77,7 @@ export default function App() {
           secondsLeft={timer.secondsLeft}
           isRunning={timer.isRunning}
           cycleCount={timer.cycleCount}
+          cyclesBeforeLongBreak={settings.cyclesBeforeLongBreak}
           onPause={timer.pause}
           onResume={timer.resume}
           onReset={timer.reset}

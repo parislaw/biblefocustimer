@@ -1,7 +1,7 @@
 import React from 'react';
 import TimerDisplay from './TimerDisplay';
 
-export default function FocusView({ secondsLeft, isRunning, cycleCount, onPause, onResume, onReset }) {
+export default function FocusView({ secondsLeft, isRunning, cycleCount, cyclesBeforeLongBreak, onPause, onResume, onReset }) {
   return (
     <div className="view focus-view">
       <div className="focus-minimal">
@@ -22,14 +22,16 @@ export default function FocusView({ secondsLeft, isRunning, cycleCount, onPause,
           </button>
         </div>
 
-        <div className="cycle-dots">
-          {Array.from({ length: 4 }, (_, i) => (
-            <span
-              key={i}
-              className={`dot ${i < (cycleCount % 4) ? 'dot-filled' : ''} ${i === (cycleCount % 4) ? 'dot-active' : ''}`}
-            />
-          ))}
-        </div>
+        {cyclesBeforeLongBreak > 0 && (
+          <div className="cycle-dots">
+            {Array.from({ length: cyclesBeforeLongBreak }, (_, i) => (
+              <span
+                key={i}
+                className={`dot ${i < (cycleCount % cyclesBeforeLongBreak) ? 'dot-filled' : ''} ${i === (cycleCount % cyclesBeforeLongBreak) ? 'dot-active' : ''}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
