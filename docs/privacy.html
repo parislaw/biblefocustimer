@@ -193,9 +193,10 @@
                 <li>Theme preference</li>
             </ul>
 
-            <p><strong>Storage Method:</strong> Data is stored using Chrome's built-in <code>chrome.storage.sync</code>,
-            which syncs your settings across all your Chrome profiles where you're signed in.
-            For non-Chrome environments, settings are stored in your browser's localStorage.</p>
+            <p><strong>Storage Method:</strong> Settings are stored using Chrome's built-in <code>chrome.storage.local</code>,
+            which keeps your data on your device. Active timer state is also stored locally so the timer
+            continues accurately when the popup is closed. For non-Chrome environments, settings fall back
+            to your browser's localStorage.</p>
 
             <h3>Session Data</h3>
             <ul>
@@ -265,6 +266,10 @@
                         <td><code>notifications</code></td>
                         <td>To show you notifications when your focus or break session completes</td>
                     </tr>
+                    <tr>
+                        <td><code>alarms</code></td>
+                        <td>To keep the timer running accurately even when the extension popup is closed</td>
+                    </tr>
                 </tbody>
             </table>
             <p>We only use these permissions for the stated purposes.</p>
@@ -286,9 +291,13 @@
 
             <h2>📧 Contact & Support</h2>
             <p>
-                If you have questions about this privacy policy or our privacy practices, please
-                <a href="https://github.com/parislaw/biblefocustimer/issues" target="_blank">create an issue on GitHub</a>.
+                If you have questions about this privacy policy or our privacy practices, please contact:
             </p>
+            <ul>
+                <li><strong>Developer:</strong> Paris</li>
+                <li><strong>Email:</strong> <a href="mailto:selahfocusapp@parislaw.net">selahfocusapp@parislaw.net</a></li>
+                <li><strong>GitHub:</strong> <a href="https://github.com/parislaw/biblefocustimer/issues" target="_blank">github.com/parislaw/biblefocustimer/issues</a></li>
+            </ul>
 
             <h2>Summary</h2>
             <p>
