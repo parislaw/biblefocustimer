@@ -82,7 +82,7 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
               min="1"
               max="120"
               value={settings.focusDuration}
-              onChange={(e) => handleNumericChange('focusDuration', e.target.value, 1, 120, 25)}
+              onChange={(e) => handleChange('focusDuration', e.target.value)}
               aria-labelledby="focus-duration-label"
               aria-describedby="focus-duration-help"
             />
@@ -99,7 +99,7 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
               min="1"
               max="30"
               value={settings.shortBreakDuration}
-              onChange={(e) => handleNumericChange('shortBreakDuration', e.target.value, 1, 30, 5)}
+              onChange={(e) => handleChange('shortBreakDuration', e.target.value)}
               aria-labelledby="short-break-label"
               aria-describedby="short-break-help"
             />
@@ -116,7 +116,7 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
               min="1"
               max="60"
               value={settings.longBreakDuration}
-              onChange={(e) => handleNumericChange('longBreakDuration', e.target.value, 1, 60, 15)}
+              onChange={(e) => handleChange('longBreakDuration', e.target.value)}
               aria-labelledby="long-break-label"
               aria-describedby="long-break-help"
             />
@@ -133,7 +133,7 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
               min="0"
               max="10"
               value={settings.cyclesBeforeLongBreak}
-              onChange={(e) => handleNumericChange('cyclesBeforeLongBreak', e.target.value, 0, 10, 4)}
+              onChange={(e) => handleChange('cyclesBeforeLongBreak', e.target.value)}
               aria-labelledby="cycles-label"
               aria-describedby="cycles-help"
             />

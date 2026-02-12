@@ -19,8 +19,8 @@ export function useSettings() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.get('settings', (result) => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get('settings', (result) => {
         if (chrome.runtime.lastError) {
           console.error('Failed to load settings from Chrome storage:', chrome.runtime.lastError);
         } else if (result.settings) {
@@ -45,8 +45,8 @@ export function useSettings() {
     const merged = { ...settings, ...newSettings };
     setSettings(merged);
 
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.set({ settings: merged }, () => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.set({ settings: merged }, () => {
         if (chrome.runtime.lastError) {
           console.error('Failed to save settings to Chrome storage:', chrome.runtime.lastError);
         }

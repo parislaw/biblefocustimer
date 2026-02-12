@@ -1,9 +1,8 @@
 import React from 'react';
+import { formatTime } from '../utils/time';
 
 export default function TimerDisplay({ secondsLeft, label }) {
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
-  const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  const display = formatTime(secondsLeft);
 
   return (
     <div className="timer-display">

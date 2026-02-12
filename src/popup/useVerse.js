@@ -3,13 +3,18 @@ import verses from '../data/verses';
 import reflections from '../data/reflections';
 
 /**
+ * Pick a random element from an array
+ */
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
  * Hook to manage verse selection based on theme and translation settings.
  */
 export function useVerse(settings) {
   const [currentVerse, setCurrentVerse] = useState(null);
   const [currentReflection, setCurrentReflection] = useState('');
-
-  const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   const getFilteredVerses = useCallback(() => {
     if (settings.theme === 'random') {
