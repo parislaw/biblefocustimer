@@ -3,222 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Selah Focus - Pomodoro Timer with Scripture</title>
+    <title>Selah Focus – Pomodoro Timer with Scripture</title>
+    <meta name="description" content="Focus deeply, anchored in the Word. A Pomodoro timer with Scripture-based rhythms for Chrome.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-forest: #1e4620;
+            --color-forest-light: #2d5016;
+            --color-ink: #1a1a1a;
+            --color-ink-muted: #4a4a4a;
+            --color-paper: #faf9f6;
+            --color-cream: #f0ede6;
+            --color-border: rgba(30, 70, 32, 0.12);
+            --font-display: 'Cormorant Garamond', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: var(--font-body);
+            line-height: 1.65;
+            color: var(--color-ink);
+            background: var(--color-paper);
             min-height: 100vh;
         }
 
-        .container {
-            max-width: 1000px;
+        .page {
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 60px 20px;
-            text-align: center;
+            padding: 0 24px 80px;
         }
 
-        h1 {
-            font-size: 3em;
-            color: #2d5016;
-            margin-bottom: 10px;
-        }
-
-        .tagline {
-            font-size: 1.3em;
-            color: #555;
-            margin-bottom: 30px;
-            font-style: italic;
-        }
-
-        .cta-buttons {
+        /* Top bar with privacy link */
+        .top-bar {
             display: flex;
-            gap: 15px;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 20px 0 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .top-bar a {
+            font-size: 0.9rem;
+            color: var(--color-ink-muted);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .top-bar a:hover {
+            color: var(--color-forest);
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 56px 0 48px;
+            animation: fadeUp 0.7s ease-out;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero .logo {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 6vw, 3.75rem);
+            font-weight: 600;
+            color: var(--color-forest);
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .hero .tagline {
+            font-family: var(--font-display);
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            font-weight: 500;
+            font-style: italic;
+            color: var(--color-ink-muted);
+            margin-bottom: 24px;
+        }
+
+        .hero .desc {
+            font-size: 1.1rem;
+            color: var(--color-ink-muted);
+            max-width: 540px;
+            margin: 0 auto 40px;
+        }
+
+        .cta-row {
+            display: flex;
+            gap: 16px;
             justify-content: center;
             flex-wrap: wrap;
-            margin: 40px 0;
         }
 
         .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            font-family: var(--font-body);
+            font-size: 1rem;
             font-weight: 600;
-            border: none;
-            cursor: pointer;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .btn-primary {
-            background-color: #2d5016;
+            background: var(--color-forest);
             color: white;
+            border: none;
         }
 
         .btn-primary:hover {
-            background-color: #1a3d0f;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(45, 80, 22, 0.3);
+            box-shadow: 0 12px 24px rgba(30, 70, 32, 0.25);
         }
 
         .btn-secondary {
-            background-color: #f0f0f0;
-            color: #2d5016;
-            border: 2px solid #2d5016;
+            background: transparent;
+            color: var(--color-forest);
+            border: 2px solid var(--color-forest);
         }
 
         .btn-secondary:hover {
-            background-color: #2d5016;
+            background: var(--color-forest);
             color: white;
             transform: translateY(-2px);
         }
 
+        /* Screenshots */
+        .screenshots {
+            margin: 48px 0 56px;
+            animation: fadeUp 0.7s ease-out 0.15s both;
+        }
+
+        .screenshots .label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-ink-muted);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .screenshots .strip {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .screenshots .strip img {
+            width: 100%;
+            max-width: 240px;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Features */
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin: 60px 0;
-            text-align: left;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin-bottom: 56px;
         }
 
         .feature {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 28px 24px;
+            border-radius: 14px;
+            border: 1px solid var(--color-border);
+            animation: fadeUp 0.6s ease-out both;
+        }
+
+        .feature:nth-child(1) { animation-delay: 0.2s; }
+        .feature:nth-child(2) { animation-delay: 0.28s; }
+        .feature:nth-child(3) { animation-delay: 0.36s; }
+        .feature:nth-child(4) { animation-delay: 0.44s; }
+        .feature:nth-child(5) { animation-delay: 0.52s; }
+        .feature:nth-child(6) { animation-delay: 0.6s; }
+
+        .feature .icon {
+            font-size: 1.75rem;
+            margin-bottom: 12px;
         }
 
         .feature h3 {
-            color: #2d5016;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+            font-family: var(--font-body);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--color-forest);
+            margin-bottom: 8px;
         }
 
         .feature p {
-            color: #666;
+            font-size: 0.95rem;
+            color: var(--color-ink-muted);
         }
 
-        .emoji {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
+        /* Footer */
         .footer {
-            margin-top: 60px;
-            padding-top: 30px;
-            border-top: 2px solid rgba(0, 0, 0, 0.1);
-            color: #666;
+            padding-top: 40px;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
         }
 
-        .footer p {
-            margin: 10px 0;
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            justify-content: center;
+            margin-bottom: 20px;
         }
 
-        a {
-            color: #2d5016;
+        .footer-links a {
+            color: var(--color-ink-muted);
+            text-decoration: none;
+            font-weight: 500;
         }
 
-        a:hover {
+        .footer-links a:hover {
+            color: var(--color-forest);
+        }
+
+        .footer .privacy {
+            margin-bottom: 24px;
+        }
+
+        .footer .privacy a {
+            color: var(--color-forest);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .footer .privacy a:hover {
             text-decoration: underline;
         }
 
+        .footer .signoff {
+            font-size: 0.9rem;
+            color: var(--color-ink-muted);
+        }
+
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
+            .hero {
+                padding: 40px 0 32px;
             }
 
-            .tagline {
-                font-size: 1.1em;
-            }
-
-            .cta-buttons {
+            .cta-row {
                 flex-direction: column;
             }
 
             .btn {
                 width: 100%;
+                justify-content: center;
+            }
+
+            .screenshots .strip img {
+                max-width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🙏 Selah Focus</h1>
-        <p class="tagline">Focus deeply, anchored in the Word</p>
+    <div class="page">
+        <nav class="top-bar">
+            <a href="privacy.html">Privacy Policy</a>
+        </nav>
 
-        <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
-            A Pomodoro timer with Scripture-based focus rhythms. Combine science-backed productivity
-            with spiritual practice to work excellently while staying grounded in faith.
-        </p>
-
-        <div class="cta-buttons">
-            <a href="https://chrome.webstore.google.com/detail/selah-focus" class="btn btn-primary">
-                📲 Install from Chrome Web Store
-            </a>
-            <a href="https://github.com/parislaw/biblefocustimer" class="btn btn-secondary">
-                🔧 View on GitHub
-            </a>
-        </div>
-
-        <div class="features">
-            <div class="feature">
-                <div class="emoji">🎯</div>
-                <h3>Smart Timer</h3>
-                <p>Customizable focus sessions, short breaks, and long breaks with auto-advance option.</p>
+        <header class="hero">
+            <h1 class="logo">Selah Focus</h1>
+            <p class="tagline">Focus deeply, anchored in the Word</p>
+            <p class="desc">
+                A Pomodoro timer with Scripture-based focus rhythms. Combine science-backed productivity
+                with spiritual practice to work excellently while staying grounded in faith.
+            </p>
+            <div class="cta-row">
+                <a href="https://chrome.webstore.google.com/detail/selah-focus" class="btn btn-primary">
+                    Install from Chrome Web Store
+                </a>
+                <a href="https://github.com/parislaw/biblefocustimer" class="btn btn-secondary">
+                    View on GitHub
+                </a>
             </div>
+        </header>
 
+        <section class="screenshots">
+            <p class="label">In action</p>
+            <div class="strip">
+                <img src="img/BiblefocusApp001.png" alt="Selah Focus timer view" width="240" height="auto">
+                <img src="img/BiblefocusApp002.png" alt="Selah Focus verse card" width="240" height="auto">
+                <img src="img/BiblefocusApp003.png" alt="Selah Focus settings" width="240" height="auto">
+                <img src="img/BiblefocusApp004.png" alt="Selah Focus break view" width="240" height="auto">
+            </div>
+        </section>
+
+        <section class="features">
             <div class="feature">
-                <div class="emoji">📖</div>
+                <div class="icon">🎯</div>
+                <h3>Smart Timer</h3>
+                <p>Customizable focus sessions, short breaks, and long breaks with auto-advance.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">📖</div>
                 <h3>Scripture Integration</h3>
                 <p>55 curated Bible verses with themes, reflection prompts, and multiple translations.</p>
             </div>
-
             <div class="feature">
-                <div class="emoji">⚙️</div>
+                <div class="icon">⚙️</div>
                 <h3>Personalized Settings</h3>
-                <p>Adjust durations, translations, themes. Settings sync across all your Chrome devices.</p>
+                <p>Adjust durations, translations, and themes. Settings sync across Chrome devices.</p>
             </div>
-
             <div class="feature">
-                <div class="emoji">🔔</div>
+                <div class="icon">🔔</div>
                 <h3>Smart Notifications</h3>
-                <p>Desktop notifications when sessions complete. Focus badge on the extension icon.</p>
+                <p>Desktop notifications when sessions complete and a focus badge on the icon.</p>
             </div>
-
             <div class="feature">
-                <div class="emoji">♿</div>
+                <div class="icon">♿</div>
                 <h3>Accessible</h3>
                 <p>Full keyboard navigation, screen reader support, WCAG 2.1 AA compliant.</p>
             </div>
-
             <div class="feature">
-                <div class="emoji">🔐</div>
+                <div class="icon">🔐</div>
                 <h3>Privacy First</h3>
                 <p>No tracking. No analytics. All data stored locally on your device.</p>
             </div>
-        </div>
+        </section>
 
-        <div class="footer">
-            <p><strong>Documentation & Policies</strong></p>
-            <p>
-                <a href="/biblefocustimer/privacy.html">Privacy Policy</a> |
-                <a href="https://github.com/parislaw/biblefocustimer/blob/main/README.md">User Guide</a> |
+        <footer class="footer">
+            <div class="privacy">
+                <a href="privacy.html">Privacy Policy</a>
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/parislaw/biblefocustimer/blob/main/README.md">User Guide</a>
                 <a href="https://github.com/parislaw/biblefocustimer">GitHub Repository</a>
-            </p>
-
-            <p style="margin-top: 30px; font-size: 0.9em;">
-                Made with ❤️ for focused, faith-centered work
-            </p>
-        </div>
+            </div>
+            <p class="signoff">Made with care for focused, faith-centered work</p>
+        </footer>
     </div>
 </body>
 </html>
