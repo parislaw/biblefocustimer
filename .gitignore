@@ -4,3 +4,9 @@ build/
 *.log
 .DS_Store
 .env
+.env.*
+!.env.example
+
+# ClaudeKit local settings (personal permissions, not for sharing)
+.claude/settings.local.json
+.mcp.json

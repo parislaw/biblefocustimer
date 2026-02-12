@@ -8,5 +8,6 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)', '**/*.test.[jt]s?(x)'],
+  testPathIgnorePatterns: ['/node_modules/', '/.claude/', '/.opencode/'],
   transformIgnorePatterns: ['/node_modules/(?!(@testing-library)/)'],
 };

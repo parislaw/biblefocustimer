@@ -11,7 +11,7 @@
 
   --text-primary: #2c2c2c;
   --text-secondary: #6b6b6b;
-  --text-muted: #9a9a9a;
+  --text-muted: #767676; /* min 4.5:1 contrast on #faf9f6 for WCAG AA */
 
   --accent: #6b8f71;
   --accent-hover: #5a7d60;
@@ -46,11 +46,11 @@
   box-sizing: border-box;
 }
 
-/* Remove default focus outline, we'll use :focus-visible */
-button:focus,
-input:focus,
-select:focus,
-textarea:focus {
+/* Remove default focus outline only for mouse/pointer users; keep it for keyboard/AT */
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
   outline: none;
 }
 

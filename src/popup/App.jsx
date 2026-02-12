@@ -97,7 +97,7 @@ export default function App() {
 
   if (!loaded) {
     return (
-      <div className="app loading">
+      <div className="app loading" role="status" aria-label="Loading Selah Focus">
         <div className="loading-text">Selah...</div>
       </div>
     );
@@ -116,7 +116,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app phase-${timer.phase}`}>
+    <div className={`app phase-${timer.phase}`} role="main">
       {timer.phase === 'idle' && (
         <IdleView
           settings={settings}
@@ -141,10 +141,10 @@ export default function App() {
           secondsLeft={timer.secondsLeft}
           isRunning={timer.isRunning}
           cycleCount={timer.cycleCount}
+          cyclesBeforeLongBreak={settings.cyclesBeforeLongBreak}
           onPause={timer.pause}
           onResume={timer.resume}
           onReset={timer.reset}
-          onBreakStart={handleBreakVerse}
         />
       )}
 

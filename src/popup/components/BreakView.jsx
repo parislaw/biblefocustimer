@@ -1,6 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import TimerDisplay from './TimerDisplay';
 import VerseCard from './VerseCard';
+import { formatTime } from '../utils/time';
+
+const ANNOUNCE_AT_SECONDS = new Set([300, 60, 30, 10, 0]);
 
 export default function BreakView({
   secondsLeft,
@@ -16,34 +19,36 @@ export default function BreakView({
   selectVerse,
   selectReflection,
 }) {
+  const [announcement, setAnnouncement] = useState('');
+
   // Select a verse for break if scripture is enabled and none is loaded
   useEffect(() => {
     if (settings.scriptureEnabled && !verse) {
       selectVerse();
       selectReflection('break');
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally run-once on mount
+
+  useEffect(() => {
+    if (isRunning && ANNOUNCE_AT_SECONDS.has(secondsLeft)) {
+      setAnnouncement(
+        secondsLeft === 0
+          ? 'Break complete'
+          : `${formatTime(secondsLeft)} remaining`
+      );
+    }
+  }, [secondsLeft, isRunning]);
 
   const label = isLongBreak ? 'Long Break' : 'Break';
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   return (
-    <div className="view break-view" role="main" aria-label={`${label} - ${formatTime(secondsLeft)} remaining`}>
+    <div className="view break-view" aria-label={`${label} - ${formatTime(secondsLeft)} remaining`}>
       <TimerDisplay secondsLeft={secondsLeft} label={label} />
 
-      {/* Live region for screen readers to announce time changes */}
-      <div
-        className="sr-only"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        Time remaining: {formatTime(secondsLeft)}
+      {/* Screen reader announcements at milestones only */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
       </div>
 
       {settings.scriptureEnabled && verse && (
@@ -51,7 +56,7 @@ export default function BreakView({
       )}
 
       {settings.scriptureEnabled && reflection && (
-        <p className="reflection-prompt" role="doc-tip" aria-label="Reflection prompt">
+        <p className="reflection-prompt" role="note" aria-label="Reflection prompt">
           {reflection}
         </p>
       )}

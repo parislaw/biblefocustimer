@@ -1,26 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import TimerDisplay from './TimerDisplay';
+import { formatTime } from '../utils/time';
 
-export default function FocusView({ secondsLeft, isRunning, cycleCount, onPause, onResume, onReset }) {
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+// Announce only at meaningful milestones to avoid flooding screen readers every second
+const ANNOUNCE_AT_SECONDS = new Set([300, 60, 30, 10, 0]); // 5 min, 1 min, 30s, 10s, done
+
+export default function FocusView({ secondsLeft, isRunning, cycleCount, cyclesBeforeLongBreak = 4, onPause, onResume, onReset }) {
+  const [announcement, setAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (isRunning && ANNOUNCE_AT_SECONDS.has(secondsLeft)) {
+      setAnnouncement(
+        secondsLeft === 0
+          ? 'Focus session complete'
+          : `${formatTime(secondsLeft)} remaining`
+      );
+    }
+  }, [secondsLeft, isRunning]);
 
   return (
-    <div className="view focus-view" role="main" aria-label="Focus session in progress">
+    <div className="view focus-view" aria-label="Focus session in progress">
       <div className="focus-minimal">
         <TimerDisplay secondsLeft={secondsLeft} label="Focus" />
 
-        {/* Live region for screen readers to announce time changes */}
-        <div
-          className="sr-only"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          Time remaining: {formatTime(secondsLeft)}
+        {/* Screen reader announcements at milestones only */}
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {announcement}
         </div>
 
         <div className="timer-controls">
@@ -54,11 +59,18 @@ export default function FocusView({ secondsLeft, isRunning, cycleCount, onPause,
         </div>
 
         {/* Accessible cycle progress indicator */}
-        <div className="cycle-dots" aria-label={`Progress: ${cycleCount % 4} of 4 cycles completed`} role="progressbar" aria-valuenow={cycleCount % 4} aria-valuemin="0" aria-valuemax="4">
-          {Array.from({ length: 4 }, (_, i) => (
+        <div
+          className="cycle-dots"
+          aria-label={`Progress: ${cycleCount % cyclesBeforeLongBreak} of ${cyclesBeforeLongBreak} cycles completed`}
+          role="progressbar"
+          aria-valuenow={cycleCount % cyclesBeforeLongBreak}
+          aria-valuemin="0"
+          aria-valuemax={cyclesBeforeLongBreak}
+        >
+          {Array.from({ length: cyclesBeforeLongBreak }, (_, i) => (
             <span
               key={i}
-              className={`dot ${i < (cycleCount % 4) ? 'dot-filled' : ''} ${i === (cycleCount % 4) ? 'dot-active' : ''}`}
+              className={`dot ${i < (cycleCount % cyclesBeforeLongBreak) ? 'dot-filled' : ''} ${i === (cycleCount % cyclesBeforeLongBreak) ? 'dot-active' : ''}`}
               aria-hidden="true"
             />
           ))}
