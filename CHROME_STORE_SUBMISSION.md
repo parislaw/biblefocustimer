@@ -1,363 +1,233 @@
-# Chrome Web Store Submission Checklist
-
-**Status:** ✅ READY FOR SUBMISSION
+# Chrome Web Store Submission Guide
 
 **Version:** 1.0.0
+**Developer:** Paris
+**Support Email:** selahfocusapp@parislaw.net
 **Last Updated:** February 2026
 
 ---
 
-## 📋 Pre-Submission Verification
+## Store Listing Copy
 
-All items below have been completed and verified.
-
-### ✅ Core Functionality
-- [x] Timer works correctly (focus, break, long break phases)
-- [x] Scripture display functional
-- [x] Settings save and persist across sessions
-- [x] Settings sync across Chrome devices
-- [x] Notifications display when sessions complete
-- [x] Extension badge updates appropriately
-- [x] All UI components render without errors
-
-### ✅ Code Quality
-- [x] All 13 tests passing (100% success rate)
-- [x] Build succeeds without errors (189 KiB bundle)
-- [x] No console errors in production build
-- [x] No security vulnerabilities identified
-- [x] Code follows best practices
-
-### ✅ Security & Permissions
-- [x] Strict Content Security Policy configured
-  - script-src 'self'
-  - object-src 'self'
-  - style-src 'self'
-- [x] Message validation in service worker
-- [x] Sender ID verification for chrome.runtime messages
-- [x] Only essential permissions requested (storage, notifications)
-- [x] No use of unsafe-inline or eval
-- [x] No external dependencies or CDN usage
-
-### ✅ Accessibility
-- [x] WCAG 2.1 AA compliant
-- [x] Full keyboard navigation support
-  - Space: pause/resume
-  - R: reset
-  - S: skip break
-  - Tab: navigate elements
-  - Tab + Shift: reverse navigation
-- [x] Screen reader compatible
-  - ARIA labels on all interactive elements
-  - Live regions for timer updates
-  - Semantic HTML structure
-  - Proper heading hierarchy
-- [x] Color contrast meets standards
-- [x] Focus indicators visible (:focus-visible)
-
-### ✅ Manifest Configuration
-- [x] manifest.json is valid JSON
-- [x] Manifest V3 (required for new extensions)
-- [x] Name, version, description present
-- [x] Icons defined (16, 48, 128px)
-- [x] Popup HTML defined
-- [x] Service worker configured
-- [x] Homepage URL configured
-- [x] CSP properly configured
-
-### ✅ Data Privacy
-- [x] Privacy Policy created and published
-  - Available at: https://parislaw.github.io/biblefocustimer/privacy.html
-  - Explains all data collection practices
-  - Describes storage methods
-  - Details permissions usage
-  - Provides user rights and deletion options
-- [x] Privacy Policy linked in manifest
-- [x] No tracking code or analytics
-- [x] No external API calls
-- [x] User data never leaves device (except sync via Chrome)
-- [x] Compliance with Chrome Web Store policies
-
-### ✅ Documentation
-- [x] README.md with complete user guide
-  - Installation instructions
-  - Feature overview
-  - How to use guide
-  - Keyboard shortcuts
-  - Troubleshooting section
-  - Development setup
-- [x] Privacy Policy document (HTML)
-- [x] GitHub Pages site setup
-- [x] Changelog/version info
-
-### ✅ Assets
-- [x] Extension icons present and correct sizes
-  - 16x16 (taskbar)
-  - 48x48 (menu)
-  - 128x128 (store listing)
-- [x] Icons are high quality and recognizable
-
----
-
-## 🚀 Chrome Web Store Submission Steps
-
-### 1. Create Developer Account
-- [ ] Visit [Chrome Web Store Developer Console](https://chrome.webstore.google.com/devconsole/)
-- [ ] Sign in with Google account
-- [ ] Pay $5 one-time registration fee
-- [ ] Complete developer profile (name, email, support URL)
-
-### 2. Prepare Extension Package
-```bash
-# The dist/ folder is ready with:
-npm run build
-# This creates production build with all files
+### Item Name
+```
+Selah Focus
 ```
 
-### 3. Upload to Web Store
-
-**In Developer Console:**
-
-1. Click "New item"
-2. Upload `dist/` folder (or create zip of dist/)
-3. Fill in store listing:
-
-#### Store Listing Fields
-
-**Item Name:** `Selah Focus`
-
-**Short Description (12 words max):**
+### Short Description (63 / 132 chars)
 ```
-Pomodoro timer with Scripture-based focus rhythms for Christians
+Focus deeply with Pomodoro timers and 55 curated Bible verses. No tracking. All data stays local.
 ```
 
-**Detailed Description:**
+### Detailed Description
 ```
-Selah Focus combines the science-backed Pomodoro Technique with curated Bible passages to help you maintain focus, honor rest, and deepen your spiritual practice.
+Selah Focus combines the science-backed Pomodoro Technique with curated Bible passages to help you maintain focus, honor rest, and deepen your spiritual practice throughout the workday.
 
-KEY FEATURES:
-🎯 Smart Timer System
+KEY FEATURES
+
+🎯 Timer That Keeps Running
+- Focus sessions survive popup close — the timer runs in the background
 - Customizable focus sessions (default 25 min)
 - Short breaks (5 min) and long breaks (15 min)
+- Configurable cycles before a long break (default every 4 sessions)
 - Auto-advance between cycles
-- Visual progress with cycle indicators
 
 📖 Scripture Integration
-- 55 curated Bible verses for focus and reflection
-- Pre-focus Scripture display (10 seconds)
-- Break-time reflection prompts
-- Multiple translations (ESV, NIV, NKJV)
-- Theme-based verse filtering
+- 55 curated Bible verses organized by theme
+- Verse displayed for 10 seconds before each focus session
+- Break-time reflection prompts for deeper meditation
+- Multiple translations: ESV, NIV, KJV
+- Theme-based filtering: Peace, Gratitude, Strength, Purpose, Trust, Growth
 
 ⚙️ Personalization
-- Adjust all timer durations
-- Enable/disable Scripture display
-- Sync settings across all your Chrome devices
-- Choose preferred translation and themes
+- Adjust all timer durations to your preference
+- Enable or disable Scripture display
+- Choose your preferred Bible translation and verse theme
+- Settings stored locally on your device
 
 🔔 Notifications
-- Desktop notifications when sessions complete
-- Extension badge shows focus status
-- Auto-clear badge on popup open
+- Desktop notification when focus or break sessions complete
+- Extension badge shows active focus status
 
 ♿ Accessibility
-- Full keyboard navigation (Space, R, S keys)
+- Full keyboard navigation (Space, R, S, Enter)
 - Screen reader support (WCAG 2.1 AA)
-- High contrast compatible
+- Announcements at meaningful milestones, not every second
 
 🔐 Privacy First
-- No tracking or analytics
-- No personal data collection
+- Zero tracking or analytics
+- No personal data collected
+- No external servers or APIs — ever
 - All data stored locally on your device
-- Only uses Chrome's built-in storage sync
-- No external APIs or servers
 
-IDEAL FOR:
+IDEAL FOR
 - Christians wanting to integrate faith with productivity
 - Anyone using the Pomodoro Technique
-- Users who want Scripture integrated into their workday
-- Teams focusing on faith-based productivity
+- Students, writers, developers, and remote workers
+- Those seeking a calmer, faith-grounded approach to deep work
 
-KEYBOARD SHORTCUTS:
-- Space: Pause/Resume timer
+KEYBOARD SHORTCUTS
+- Space: Pause / Resume
+- Enter: Start Focus Session
 - R: Reset timer
 - S: Skip break
+- Alt+S: Open Settings
+- Escape: Close Settings
 
-Made with ❤️ for focused, faith-centered work.
+Made with care for focused, faith-centered work.
 ```
 
-**Category:** Productivity
-
-**Language:** English
-
-**Website:** `https://github.com/parislaw/biblefocustimer`
-
-**Support Email:** (your email)
-
-**Privacy Policy:** `https://parislaw.github.io/biblefocustimer/privacy.html`
-
-**Detailed Privacy Policy:** (same URL)
-
-**Permissions Justification:**
+### Category
 ```
-Storage Permission:
-- Used to save and sync your timer settings across devices
-- Stores: focus/break durations, auto-start preference, Scripture settings
-- No third-party access
-
-Notifications Permission:
-- Used to notify you when focus or break sessions complete
-- Only shows notifications at session end
-- Can be disabled in Chrome settings
+Productivity
 ```
 
-### 4. Upload Screenshots
-
-Create 3 screenshots (1280x800px minimum):
-
-**Screenshot 1: Idle View**
-- Shows timer at rest with "Start Focus" button
-- Caption: "Start your focus session with a tap"
-
-**Screenshot 2: Focus View**
-- Shows active focus timer countdown
-- Caption: "Stay focused with visual progress tracking"
-
-**Screenshot 3: Settings**
-- Shows customization options
-- Caption: "Personalize your focus rhythm"
-
-### 5. Select Categories & Rating
-
-**Content Rating:**
-- No controversial content
-- Suitable for all ages
-- Select appropriate ESRB/IAMAI ratings
-
-**Category:** Productivity
-
-### 6. Review & Publish
-
-1. Review all information for accuracy
-2. Ensure privacy policy URL is correct
-3. Check icon appearance in preview
-4. Submit for review
-5. **Wait for Chrome Web Store review** (typically 1-3 days)
+### Language
+```
+English
+```
 
 ---
 
-## ✅ Quality Assurance Before Submission
+## URLs
 
-Run these commands to verify everything works:
+| Field | Value |
+|-------|-------|
+| Website | `https://parislaw.github.io/biblefocustimer/` |
+| Support Email | `selahfocusapp@parislaw.net` |
+| Privacy Policy | `https://parislaw.github.io/biblefocustimer/privacy.html` |
 
+---
+
+## Permissions Justification
+
+When prompted in the Developer Console to justify permissions:
+
+**storage**
+> Used to save your timer preferences (durations, translation, theme, auto-start) and active timer state locally on your device. No data is transmitted externally.
+
+**notifications**
+> Used to display a desktop notification when your focus session or break session completes. Notifications are only shown at session end and contain no personal data.
+
+**alarms**
+> Used to keep the timer countdown running accurately in the background when the extension popup is closed. Without this, the timer would stop the moment you clicked away.
+
+---
+
+## Privacy Practices (Developer Console questions)
+
+Answer these in the Privacy tab of the Developer Console:
+
+| Question | Answer |
+|----------|--------|
+| Does your extension collect any user data? | No |
+| Does your extension use any data for purposes other than the extension's core functionality? | No |
+| Does your extension transfer any user data to third parties? | No |
+
+---
+
+## Screenshots Needed
+
+Create **3–5 screenshots at 1280×800px** (PNG or JPEG). Load the built extension in Chrome at that viewport size and capture each view.
+
+| # | View to capture | Suggested caption |
+|---|----------------|-------------------|
+| 1 | Idle view — timer at rest, cycle dots, Start Focus button | "Begin each session anchored in Scripture" |
+| 2 | Pre-focus verse view — verse card with reflection prompt | "A moment of Scripture before every focus session" |
+| 3 | Active focus countdown — timer running, progress dots | "Stay in the zone with a clean, distraction-free timer" |
+| 4 | Break view — verse card during break | "Let Scripture guide your rest" |
+| 5 | Settings view — all customization options visible | "Personalize your focus rhythm" |
+
+### How to capture at 1280×800
+1. Run `npm run build`
+2. Go to `chrome://extensions/` → Load unpacked → select `dist/`
+3. Open DevTools on the popup (`right-click extension icon → Inspect popup`)
+4. Set DevTools viewport to 1280×800
+5. Screenshot each view
+
+---
+
+## Submission Steps
+
+### 1. Build the extension
 ```bash
-# Verify build succeeds
 npm run build
-# Expected output: webpack compiled successfully
-
-# Verify all tests pass
-npm test
-# Expected output: 13 passed, 13 total
-
-# Check manifest validity
-node -e "console.log(JSON.parse(require('fs').readFileSync('public/manifest.json')))"
-# Should output valid JSON with no errors
-
-# Load in Chrome and test:
-# 1. chrome://extensions/ → Load unpacked dist/
-# 2. Click extension icon
-# 3. Test timer functionality (focus → break cycle)
-# 4. Test settings save
-# 5. Verify notifications on session end
-# 6. Check storage sync setup
+cd dist && zip -r ../selah-focus-1.0.0.zip . && cd ..
 ```
 
----
+### 2. Verify before upload
+```bash
+npm test          # must show 13 passed
+npm run build     # must show "compiled successfully"
+```
 
-## 📞 Post-Submission
+### 3. Developer Console
+1. Go to [Chrome Web Store Developer Console](https://chrome.webstore.google.com/u/0/developer/dashboard)
+2. Pay $5 one-time registration fee (if not already done)
+3. Click **"New item"**
+4. Upload `selah-focus-1.0.0.zip`
 
-### After Approval
-- [ ] Extension will be published to Chrome Web Store
-- [ ] You'll receive confirmation email
-- [ ] Extension becomes available for download
-- [ ] Monitor ratings and reviews
+### 4. Fill in the listing
+- Copy text from **Store Listing Copy** section above
+- Upload screenshots
+- Set Category → Productivity
+- Enter Privacy Policy URL
+- Fill in permissions justifications
+- Answer Privacy Practices questions (all "No")
 
-### Handling Reviews & Issues
-- Respond to user reviews politely
-- Address bug reports promptly
-- Push updates through Web Store for critical fixes
-- Update version number in manifest.json for each release
-
-### Future Maintenance
-- Monitor Chrome API deprecations
-- Update Chrome browser compatibility as needed
-- Consider feature requests from user reviews
-- Maintain test coverage above 80%
-
----
-
-## 🔒 Compliance Checklist
-
-- [x] No deceptive or misleading advertising
-- [x] No malware, spyware, or harmful code
-- [x] Clear description of functionality
-- [x] Accurate privacy policy
-- [x] Proper permission justification
-- [x] No data collection beyond stated purposes
-- [x] No manipulation of user settings without consent
-- [x] No phishing or social engineering
-- [x] No excessive permissions requested
-- [x] Support contact available
-- [x] Clear terms of use (via privacy policy)
+### 5. Submit
+- Preview listing, verify icon looks correct
+- Click **Submit for Review**
+- Expected review time: **1–3 business days** (minimal permissions)
 
 ---
 
-## 📊 Extension Specifications
+## Pre-Submission Checklist
 
-| Item | Details |
-|------|---------|
-| **Bundle Size** | 189 KiB (optimal for performance) |
-| **Manifest Version** | 3 (current standard) |
-| **React Version** | 18.x (latest) |
-| **Build Tool** | Webpack 5 |
-| **Test Coverage** | 13/13 tests (100%) |
-| **Accessibility** | WCAG 2.1 AA |
-| **Security** | Strict CSP, no unsafe-inline |
-| **Permissions** | 2 (minimal necessary) |
+### Code & Build
+- [x] All 13 tests passing
+- [x] Build succeeds without warnings
+- [x] Timer survives popup close (chrome.alarms)
+- [x] No console errors in production build
 
----
+### Manifest
+- [x] manifest_version: 3
+- [x] short_name, minimum_chrome_version: "116"
+- [x] Only essential permissions: storage, notifications, alarms
+- [x] Strict CSP (script-src 'self', no unsafe-eval)
+- [x] Icons at 16, 48, 128px
 
-## 🎯 Next Steps
+### Accessibility
+- [x] WCAG 2.1 AA contrast ratios
+- [x] Keyboard navigation (Space, R, S, Enter, Escape)
+- [x] Screen reader milestone announcements
+- [x] focus-visible indicators for keyboard users
+- [x] Error boundary prevents blank popup
 
-1. **Create Chrome Developer Account** if you don't have one
-2. **Prepare store listing assets** (copy text above, prepare screenshots)
-3. **Upload extension** to Developer Console
-4. **Submit for review** - estimated 1-3 days
-5. **Monitor review status** - you'll receive email updates
-6. **Respond to Chrome review team** if changes requested
-7. **Once approved** - extension is live and available to all Chrome users!
+### Privacy & Legal
+- [x] Privacy policy published: https://parislaw.github.io/biblefocustimer/privacy.html
+- [x] Developer contact in privacy policy: Paris / selahfocusapp@parislaw.net
+- [x] Verse sources correctly attributed (ESV, NIV, KJV)
+- [x] No NKJV/NASB (copyrighted) text included
+- [x] No tracking, analytics, or external API calls
 
----
-
-## ⚠️ Common Rejection Reasons & Prevention
-
-| Issue | How We've Addressed It |
-|-------|------------------------|
-| Privacy policy missing | ✅ Published at https://parislaw.github.io/biblefocustimer/privacy.html |
-| Vague permissions | ✅ Clear justification provided in manifest |
-| Poor accessibility | ✅ WCAG 2.1 AA compliant with full keyboard support |
-| Misleading claims | ✅ Accurate feature description in README |
-| Security issues | ✅ Strict CSP, message validation, no external APIs |
-| Poor quality | ✅ 100% test pass rate, professional UI |
-| Deceptive icon | ✅ Clear, recognizable icon asset |
+### Store Listing
+- [x] Short description under 132 chars ✓ (97 chars)
+- [x] Long description accurate and complete
+- [ ] Screenshots created (3–5 at 1280×800) ← **still needed**
+- [ ] Developer Console account created
+- [ ] Extension zip built and ready to upload
 
 ---
 
-**Status: ✅ APPROVED FOR SUBMISSION**
+## Post-Submission
 
-All requirements met. Extension is ready for Chrome Web Store publication.
-
-For questions, contact: [your-email@domain.com]
+Once approved (you'll get an email):
+- Replace `EXTENSION_ID` placeholder in README.md badges with the real ID
+- Update the Chrome Web Store URL in README.md
+- Monitor the Reviews tab in Developer Console
+- Reply to user reviews within a few days
 
 ---
 
-*Last verified: February 2026*
+*Status: Ready to submit once screenshots are added.*
