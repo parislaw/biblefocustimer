@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import CustomVerseForm from './CustomVerseForm';
+import CustomVerseList from './CustomVerseList';
+import { getCustomVerses, setCustomVerses } from '../customVerseStorage';
 
 const TRANSLATIONS = [
   { value: 'esv', label: 'ESV' },
@@ -12,9 +15,21 @@ const THEMES = [
   { value: 'peace', label: 'Peace' },
   { value: 'discipline', label: 'Discipline' },
   { value: 'work', label: 'Work & Diligence' },
+  { value: 'custom', label: 'Custom Verses' },
 ];
 
 export default function SettingsView({ settings, updateSettings, onClose }) {
+  const [activeTab, setActiveTab] = useState('timer');
+  const [customVerses, setLocalCustomVerses] = useState([]);
+  const [editingVerse, setEditingVerse] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    getCustomVerses((verses) => {
+      setLocalCustomVerses(verses || []);
+    });
+  }, []);
+
   const validateNumericInput = (value, min, max, defaultValue) => {
     const parsed = parseInt(value);
     if (isNaN(parsed) || parsed < min) {
@@ -41,6 +56,31 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
     }
 
     updateSettings({ [key]: validatedValue });
+  };
+
+  const handleAddVerse = (verseData) => {
+    const updatedVerses = editingVerse
+      ? customVerses.map((v) => (v.id === verseData.id ? verseData : v))
+      : [...customVerses, verseData];
+
+    setLocalCustomVerses(updatedVerses);
+    setEditingVerse(null);
+    setShowForm(false);
+
+    setCustomVerses(updatedVerses, () => {
+      // Callback after storage
+    });
+  };
+
+  const handleDeleteVerse = (verseId) => {
+    const updatedVerses = customVerses.filter((v) => v.id !== verseId);
+    setLocalCustomVerses(updatedVerses);
+    setCustomVerses(updatedVerses);
+  };
+
+  const handleEditVerse = (verse) => {
+    setEditingVerse(verse);
+    setShowForm(true);
   };
 
   return (
@@ -70,147 +110,216 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
         </button>
       </header>
 
-      <div className="settings-section">
-        <h3 className="settings-section-title">Timer</h3>
+      <div className="settings-tabs">
+        <button
+          className={`tab-button ${activeTab === 'timer' ? 'active' : ''}`}
+          onClick={() => setActiveTab('timer')}
+          role="tab"
+          aria-selected={activeTab === 'timer'}
+        >
+          Timer
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'scripture' ? 'active' : ''}`}
+          onClick={() => setActiveTab('scripture')}
+          role="tab"
+          aria-selected={activeTab === 'scripture'}
+        >
+          Scripture
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'custom' ? 'active' : ''}`}
+          onClick={() => setActiveTab('custom')}
+          role="tab"
+          aria-selected={activeTab === 'custom'}
+        >
+          Custom Verses
+        </button>
+      </div>
 
-        <label className="setting-row" htmlFor="focus-duration">
-          <span id="focus-duration-label">Focus duration</span>
-          <div className="setting-input-group">
+      {activeTab === 'timer' && (
+        <div className="settings-section" role="tabpanel">
+          <h3 className="settings-section-title">Timer Settings</h3>
+
+          <label className="setting-row" htmlFor="focus-duration">
+            <span id="focus-duration-label">Focus duration</span>
+            <div className="setting-input-group">
+              <input
+                id="focus-duration"
+                type="number"
+                min="1"
+                max="120"
+                value={settings.focusDuration}
+                onChange={(e) => handleChange('focusDuration', e.target.value)}
+                aria-labelledby="focus-duration-label"
+                aria-describedby="focus-duration-help"
+              />
+              <span className="setting-unit" id="focus-duration-help">min</span>
+            </div>
+          </label>
+
+          <label className="setting-row" htmlFor="short-break">
+            <span id="short-break-label">Short break</span>
+            <div className="setting-input-group">
+              <input
+                id="short-break"
+                type="number"
+                min="1"
+                max="30"
+                value={settings.shortBreakDuration}
+                onChange={(e) => handleChange('shortBreakDuration', e.target.value)}
+                aria-labelledby="short-break-label"
+                aria-describedby="short-break-help"
+              />
+              <span className="setting-unit" id="short-break-help">min</span>
+            </div>
+          </label>
+
+          <label className="setting-row" htmlFor="long-break">
+            <span id="long-break-label">Long break</span>
+            <div className="setting-input-group">
+              <input
+                id="long-break"
+                type="number"
+                min="1"
+                max="60"
+                value={settings.longBreakDuration}
+                onChange={(e) => handleChange('longBreakDuration', e.target.value)}
+                aria-labelledby="long-break-label"
+                aria-describedby="long-break-help"
+              />
+              <span className="setting-unit" id="long-break-help">min</span>
+            </div>
+          </label>
+
+          <label className="setting-row" htmlFor="cycles-before-long">
+            <span id="cycles-label">Cycles before long break</span>
+            <div className="setting-input-group">
+              <input
+                id="cycles-before-long"
+                type="number"
+                min="0"
+                max="10"
+                value={settings.cyclesBeforeLongBreak}
+                onChange={(e) => handleChange('cyclesBeforeLongBreak', e.target.value)}
+                aria-labelledby="cycles-label"
+                aria-describedby="cycles-help"
+              />
+              <span className="setting-unit" id="cycles-help">(0 to disable)</span>
+            </div>
+          </label>
+
+          <label className="setting-row" htmlFor="auto-start-toggle">
+            <span id="auto-start-label">Auto-start next session</span>
             <input
-              id="focus-duration"
-              type="number"
-              min="1"
-              max="120"
-              value={settings.focusDuration}
-              onChange={(e) => handleChange('focusDuration', e.target.value)}
-              aria-labelledby="focus-duration-label"
-              aria-describedby="focus-duration-help"
+              id="auto-start-toggle"
+              type="checkbox"
+              checked={settings.autoStartNext}
+              onChange={(e) => handleChange('autoStartNext', e.target.checked)}
+              aria-labelledby="auto-start-label"
+              aria-describedby="auto-start-help"
             />
-            <span className="setting-unit" id="focus-duration-help">min</span>
-          </div>
-        </label>
+            <span className="sr-only" id="auto-start-help">Enable to automatically start the next session when the current one ends</span>
+          </label>
+        </div>
+      )}
 
-        <label className="setting-row" htmlFor="short-break">
-          <span id="short-break-label">Short break</span>
-          <div className="setting-input-group">
+      {activeTab === 'scripture' && (
+        <div className="settings-section" role="tabpanel">
+          <h3 className="settings-section-title">Scripture Settings</h3>
+
+          <label className="setting-row" htmlFor="scripture-toggle">
+            <span id="scripture-label">Show Scripture</span>
             <input
-              id="short-break"
-              type="number"
-              min="1"
-              max="30"
-              value={settings.shortBreakDuration}
-              onChange={(e) => handleChange('shortBreakDuration', e.target.value)}
-              aria-labelledby="short-break-label"
-              aria-describedby="short-break-help"
+              id="scripture-toggle"
+              type="checkbox"
+              checked={settings.scriptureEnabled}
+              onChange={(e) => handleChange('scriptureEnabled', e.target.checked)}
+              aria-labelledby="scripture-label"
+              aria-describedby="scripture-help"
             />
-            <span className="setting-unit" id="short-break-help">min</span>
-          </div>
-        </label>
+            <span className="sr-only" id="scripture-help">Enable to display Bible verses and reflections during focus sessions</span>
+          </label>
 
-        <label className="setting-row" htmlFor="long-break">
-          <span id="long-break-label">Long break</span>
-          <div className="setting-input-group">
-            <input
-              id="long-break"
-              type="number"
-              min="1"
-              max="60"
-              value={settings.longBreakDuration}
-              onChange={(e) => handleChange('longBreakDuration', e.target.value)}
-              aria-labelledby="long-break-label"
-              aria-describedby="long-break-help"
-            />
-            <span className="setting-unit" id="long-break-help">min</span>
-          </div>
-        </label>
+          <label className="setting-row" htmlFor="translation-select">
+            <span id="translation-label">Translation</span>
+            <select
+              id="translation-select"
+              value={settings.translation}
+              onChange={(e) => handleChange('translation', e.target.value)}
+              aria-labelledby="translation-label"
+              disabled={!settings.scriptureEnabled}
+            >
+              {TRANSLATIONS.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="setting-row" htmlFor="cycles-before-long">
-          <span id="cycles-label">Cycles before long break</span>
-          <div className="setting-input-group">
-            <input
-              id="cycles-before-long"
-              type="number"
-              min="0"
-              max="10"
-              value={settings.cyclesBeforeLongBreak}
-              onChange={(e) => handleChange('cyclesBeforeLongBreak', e.target.value)}
-              aria-labelledby="cycles-label"
-              aria-describedby="cycles-help"
-            />
-            <span className="setting-unit" id="cycles-help">(0 to disable)</span>
-          </div>
-        </label>
+          <label className="setting-row" htmlFor="theme-select">
+            <span id="theme-label">Theme</span>
+            <select
+              id="theme-select"
+              value={settings.theme}
+              onChange={(e) => handleChange('theme', e.target.value)}
+              aria-labelledby="theme-label"
+              disabled={!settings.scriptureEnabled}
+            >
+              {THEMES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="setting-row" htmlFor="auto-start-toggle">
-          <span id="auto-start-label">Auto-start next session</span>
-          <input
-            id="auto-start-toggle"
-            type="checkbox"
-            checked={settings.autoStartNext}
-            onChange={(e) => handleChange('autoStartNext', e.target.checked)}
-            aria-labelledby="auto-start-label"
-            aria-describedby="auto-start-help"
+          <div className="settings-footer">
+            <p className="settings-note">
+              Scripture translations sourced for personal devotional use.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'custom' && (
+        <div className="settings-section" role="tabpanel">
+          <h3 className="settings-section-title">Custom Verses</h3>
+          <p className="settings-description">
+            Manage your verses. You can add custom Bible verses to your collection.
+          </p>
+
+          {!showForm && (
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowForm(true)}
+              style={{ marginBottom: '1rem' }}
+            >
+              + Add New Verse
+            </button>
+          )}
+
+          {showForm && (
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+              <CustomVerseForm
+                verse={editingVerse}
+                onSubmit={handleAddVerse}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingVerse(null);
+                }}
+              />
+            </div>
+          )}
+
+          <CustomVerseList
+            verses={customVerses}
+            onEdit={handleEditVerse}
+            onDelete={handleDeleteVerse}
           />
-          <span className="sr-only" id="auto-start-help">Enable to automatically start the next session when the current one ends</span>
-        </label>
-      </div>
-
-      <div className="settings-section">
-        <h3 className="settings-section-title">Scripture</h3>
-
-        <label className="setting-row" htmlFor="scripture-toggle">
-          <span id="scripture-label">Show Scripture</span>
-          <input
-            id="scripture-toggle"
-            type="checkbox"
-            checked={settings.scriptureEnabled}
-            onChange={(e) => handleChange('scriptureEnabled', e.target.checked)}
-            aria-labelledby="scripture-label"
-            aria-describedby="scripture-help"
-          />
-          <span className="sr-only" id="scripture-help">Enable to display Bible verses and reflections during focus sessions</span>
-        </label>
-
-        <label className="setting-row" htmlFor="translation-select">
-          <span id="translation-label">Translation</span>
-          <select
-            id="translation-select"
-            value={settings.translation}
-            onChange={(e) => handleChange('translation', e.target.value)}
-            aria-labelledby="translation-label"
-            disabled={!settings.scriptureEnabled}
-          >
-            {TRANSLATIONS.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="setting-row" htmlFor="theme-select">
-          <span id="theme-label">Theme</span>
-          <select
-            id="theme-select"
-            value={settings.theme}
-            onChange={(e) => handleChange('theme', e.target.value)}
-            aria-labelledby="theme-label"
-            disabled={!settings.scriptureEnabled}
-          >
-            {THEMES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <div className="settings-footer">
-        <p className="settings-note">
-          Scripture translations sourced for personal devotional use.
-        </p>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
