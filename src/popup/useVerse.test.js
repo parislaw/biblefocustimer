@@ -1,5 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { useVerse } from './useVerse';
+import * as customStorage from './customVerseStorage';
+
+jest.mock('./customVerseStorage');
 
 const defaultSettings = {
   theme: 'random',
@@ -51,5 +54,66 @@ describe('useVerse', () => {
       });
     }).not.toThrow();
     expect(result.current.currentVerse).not.toBeNull();
+  });
+});
+
+describe('useVerse with custom verses', () => {
+  beforeEach(() => {
+    customStorage.getCustomVerses.mockClear();
+  });
+
+  it('merges custom verses with curated verses', (done) => {
+    const customVerses = [
+      {
+        id: 'custom-1',
+        theme: 'custom',
+        reference: 'John 3:16',
+        esv: 'For God so loved the world...',
+        niv: 'For God so loved the world...',
+      },
+    ];
+
+    customStorage.getCustomVerses.mockImplementation((cb) => {
+      cb(customVerses);
+    });
+
+    const { result } = renderHook(() => useVerse({ theme: 'custom', translation: 'esv' }));
+
+    act(() => {
+      result.current.selectVerse();
+    });
+
+    // Wait for async operation
+    setTimeout(() => {
+      expect(result.current.currentVerse).toBeDefined();
+      expect(result.current.currentVerse.reference).toBe('John 3:16');
+      done();
+    }, 100);
+  });
+
+  it('includes custom verses when theme is random', (done) => {
+    const customVerses = [
+      {
+        id: 'custom-1',
+        theme: 'custom',
+        reference: 'John 3:16',
+        esv: 'For God so loved the world...',
+      },
+    ];
+
+    customStorage.getCustomVerses.mockImplementation((cb) => {
+      cb(customVerses);
+    });
+
+    const { result } = renderHook(() => useVerse({ theme: 'random', translation: 'esv' }));
+
+    act(() => {
+      result.current.selectVerse();
+    });
+
+    setTimeout(() => {
+      expect(result.current.currentVerse).toBeDefined();
+      done();
+    }, 100);
   });
 });
