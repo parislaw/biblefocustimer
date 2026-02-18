@@ -9,6 +9,25 @@ const defaultSettings = {
   translation: 'esv',
 };
 
+// Mock chrome API
+beforeEach(() => {
+  global.chrome = {
+    storage: {
+      local: {
+        get: jest.fn((key, cb) => cb({ customVerses: [] })),
+        set: jest.fn((payload, cb) => cb && cb()),
+      },
+      onChanged: {
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+      },
+    },
+    runtime: {
+      lastError: null,
+    },
+  };
+});
+
 describe('useVerse', () => {
   it('selectVerse sets a verse with correct translation', () => {
     const { result } = renderHook(() => useVerse(defaultSettings));
@@ -115,5 +134,59 @@ describe('useVerse with custom verses', () => {
       expect(result.current.currentVerse).toBeDefined();
       done();
     }, 100);
+  });
+
+  it('reactively updates when custom verses change via storage listener', (done) => {
+    let storageListenerCallback;
+    global.chrome.storage.onChanged.addListener.mockImplementation((cb) => {
+      storageListenerCallback = cb;
+    });
+
+    customStorage.getCustomVerses.mockImplementation((cb) => {
+      cb([]);
+    });
+
+    const { result } = renderHook(() => useVerse({ theme: 'custom', translation: 'esv' }));
+
+    // Simulate storage change from another context
+    setTimeout(() => {
+      const newCustomVerses = [
+        {
+          id: 'custom-1',
+          theme: 'custom',
+          reference: 'Psalm 23:1',
+          esv: 'The Lord is my shepherd...',
+        },
+      ];
+
+      act(() => {
+        storageListenerCallback({ customVerses: { newValue: newCustomVerses } }, 'local');
+      });
+
+      // Now select should pick from updated verses
+      act(() => {
+        result.current.selectVerse();
+      });
+
+      expect(result.current.currentVerse).toBeDefined();
+      expect(result.current.currentVerse.reference).toBe('Psalm 23:1');
+      done();
+    }, 50);
+  });
+
+  it('selectVerse handles empty custom verses by falling back to curated verses', () => {
+    customStorage.getCustomVerses.mockImplementation((cb) => {
+      cb([]);
+    });
+
+    const { result } = renderHook(() => useVerse({ theme: 'custom', translation: 'esv' }));
+
+    act(() => {
+      result.current.selectVerse();
+    });
+
+    // When custom theme is selected but no custom verses exist, falls back to curated verses
+    expect(result.current.currentVerse).not.toBeNull();
+    expect(result.current.currentVerse.reference).toBeDefined();
   });
 });

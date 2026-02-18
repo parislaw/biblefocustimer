@@ -19,11 +19,22 @@ export function useVerse(settings) {
   const [currentReflection, setCurrentReflection] = useState('');
   const [customVerses, setCustomVerses] = useState([]);
 
-  // Load custom verses on mount
+  // Load custom verses on mount and listen for storage changes
   useEffect(() => {
     getCustomVerses((loadedVerses) => {
       setCustomVerses(loadedVerses || []);
     });
+
+    // Listen for real-time updates when verses are added/edited/deleted
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      const handleStorageChange = (changes, area) => {
+        if (area === 'local' && changes.customVerses) {
+          setCustomVerses(changes.customVerses.newValue || []);
+        }
+      };
+      chrome.storage.onChanged.addListener(handleStorageChange);
+      return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+    }
   }, []);
 
   const getFilteredVerses = useCallback(() => {
@@ -44,6 +55,10 @@ export function useVerse(settings) {
 
   const selectVerse = useCallback(() => {
     const pool = getFilteredVerses();
+    if (pool.length === 0) {
+      setCurrentVerse(null);
+      return;
+    }
     const verse = pickRandom(pool);
     const translation = settings.translation || 'esv';
     setCurrentVerse({

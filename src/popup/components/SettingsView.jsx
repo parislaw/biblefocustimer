@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CustomVerseForm from './CustomVerseForm';
 import CustomVerseList from './CustomVerseList';
-import { getCustomVerses, setCustomVerses } from '../customVerseStorage';
+import { getCustomVerses, setCustomVerses as persistCustomVerses } from '../customVerseStorage';
 
 const TRANSLATIONS = [
   { value: 'esv', label: 'ESV' },
@@ -20,13 +20,13 @@ const THEMES = [
 
 export default function SettingsView({ settings, updateSettings, onClose }) {
   const [activeTab, setActiveTab] = useState('timer');
-  const [customVerses, setLocalCustomVerses] = useState([]);
+  const [customVerses, setCustomVerses] = useState([]);
   const [editingVerse, setEditingVerse] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     getCustomVerses((verses) => {
-      setLocalCustomVerses(verses || []);
+      setCustomVerses(verses || []);
     });
   }, []);
 
@@ -63,19 +63,19 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
       ? customVerses.map((v) => (v.id === verseData.id ? verseData : v))
       : [...customVerses, verseData];
 
-    setLocalCustomVerses(updatedVerses);
+    setCustomVerses(updatedVerses);
     setEditingVerse(null);
     setShowForm(false);
 
-    setCustomVerses(updatedVerses, () => {
+    persistCustomVerses(updatedVerses, () => {
       // Callback after storage
     });
   };
 
   const handleDeleteVerse = (verseId) => {
     const updatedVerses = customVerses.filter((v) => v.id !== verseId);
-    setLocalCustomVerses(updatedVerses);
     setCustomVerses(updatedVerses);
+    persistCustomVerses(updatedVerses);
   };
 
   const handleEditVerse = (verse) => {
