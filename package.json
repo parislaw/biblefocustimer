@@ -1,6 +1,6 @@
 {
   "name": "selah-focus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Pomodoro timer Chrome extension with Scripture-based focus rhythms",
   "private": true,
   "scripts": {
