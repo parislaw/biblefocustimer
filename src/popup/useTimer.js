@@ -43,6 +43,33 @@ export function useTimer(settings) {
     }
   }, [settings.focusDuration, phase]);
 
+  // Reconnect to a timer that was running when the popup was closed
+  useEffect(() => {
+    if (typeof chrome === 'undefined' || !chrome.storage) return;
+
+    chrome.storage.local.get('timerState', (result) => {
+      if (chrome.runtime.lastError || !result.timerState) return;
+
+      const { phase: savedPhase, startedAt, durationSeconds, isPaused, remainingAtPause } = result.timerState;
+
+      if (isPaused) {
+        setPhase(savedPhase);
+        setSecondsLeft(Math.round(remainingAtPause));
+        // isRunning stays false — user must manually resume
+        return;
+      }
+
+      const elapsed = (Date.now() - startedAt) / 1000;
+      const remaining = Math.max(0, Math.round(durationSeconds - elapsed));
+
+      if (remaining <= 0) return; // alarm already fired; service worker handled completion
+
+      setPhase(savedPhase);
+      setSecondsLeft(remaining);
+      setIsRunning(true); // activates the polling interval
+    });
+  }, []); // run once on mount only
+
   // Poll storage every second to derive remaining time from alarm start timestamp
   useEffect(() => {
     if (!isRunning) return;
