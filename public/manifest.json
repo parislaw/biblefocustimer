@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Selah Focus",
   "short_name": "Selah Focus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minimum_chrome_version": "116",
   "description": "A Pomodoro timer with Scripture-based focus rhythms. Work deeply, anchored in the Word.",
   "homepage_url": "https://parislaw.github.io/biblefocustimer/",
