@@ -18,11 +18,18 @@ const THEMES = [
   { value: 'custom', label: 'Custom Verses' },
 ];
 
+const COMPLETION_SOUNDS = [
+  { id: 'complete', label: 'Alert', file: 'complete.mp3' },
+  { id: 'extraterrestrial', label: 'Extraterrestrial', file: 'alert-extraterrestrial.mp3' },
+  { id: 'dragon', label: 'Dragon', file: 'alert-dragon.mp3' },
+];
+
 export default function SettingsView({ settings, updateSettings, onClose }) {
   const [activeTab, setActiveTab] = useState('timer');
   const [customVerses, setCustomVerses] = useState([]);
   const [editingVerse, setEditingVerse] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [testingSound, setTestingSound] = useState(false);
 
   useEffect(() => {
     getCustomVerses((verses) => {
@@ -53,9 +60,21 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
       validatedValue = validateNumericInput(value, 1, 60, 15);
     } else if (key === 'cyclesBeforeLongBreak') {
       validatedValue = validateNumericInput(value, 0, 10, 4);
+    } else if (key === 'completionSoundVolume') {
+      const n = parseInt(value, 10);
+      validatedValue = isNaN(n) ? 80 : Math.min(100, Math.max(0, n));
     }
 
     updateSettings({ [key]: validatedValue });
+  };
+
+  const handleTestSound = () => {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+    setTestingSound(true);
+    chrome.runtime.sendMessage({ type: 'PLAY_TEST_SOUND' }, () => {
+      if (chrome.runtime.lastError) console.warn(chrome.runtime.lastError);
+      setTestingSound(false);
+    });
   };
 
   const handleAddVerse = (verseData) => {
@@ -220,6 +239,84 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
               aria-describedby="auto-start-help"
             />
             <span className="sr-only" id="auto-start-help">Enable to automatically start the next session when the current one ends</span>
+          </label>
+
+          <label className="setting-row" htmlFor="play-sound-toggle">
+            <span id="play-sound-label">Play sound when timer completes</span>
+            <input
+              id="play-sound-toggle"
+              type="checkbox"
+              checked={settings.playCompletionSound}
+              onChange={(e) => handleChange('playCompletionSound', e.target.checked)}
+              aria-labelledby="play-sound-label"
+              aria-describedby="play-sound-help"
+            />
+            <span className="sr-only" id="play-sound-help">Play a short sound when a focus or break session ends</span>
+          </label>
+
+          {settings.playCompletionSound && (
+            <>
+              <label className="setting-row" htmlFor="completion-sound-select">
+                <span id="completion-sound-label">Completion sound</span>
+                <select
+                  id="completion-sound-select"
+                  value={settings.completionSoundId || 'complete'}
+                  onChange={(e) => handleChange('completionSoundId', e.target.value)}
+                  aria-labelledby="completion-sound-label"
+                >
+                  {COMPLETION_SOUNDS.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="setting-row setting-row-volume" role="group" aria-labelledby="volume-label">
+                <span id="volume-label">Volume</span>
+                <div className="setting-volume-group">
+                  <input
+                    id="volume-slider"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={settings.completionSoundVolume ?? 80}
+                    onChange={(e) => handleChange('completionSoundVolume', parseInt(e.target.value, 10))}
+                    aria-labelledby="volume-label"
+                    aria-valuetext={`${settings.completionSoundVolume ?? 80}%`}
+                  />
+                  <span className="setting-volume-value" aria-live="polite">
+                    {settings.completionSoundVolume ?? 80}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="setting-row">
+                <span id="test-sound-label">Test sound</span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleTestSound}
+                  disabled={testingSound}
+                  aria-labelledby="test-sound-label"
+                >
+                  {testingSound ? 'Playing…' : 'Play'}
+                </button>
+              </div>
+            </>
+          )}
+
+          <label className="setting-row" htmlFor="sticky-notification-toggle">
+            <span id="sticky-notification-label">Keep notification until dismissed</span>
+            <input
+              id="sticky-notification-toggle"
+              type="checkbox"
+              checked={settings.stickyNotification}
+              onChange={(e) => handleChange('stickyNotification', e.target.checked)}
+              aria-labelledby="sticky-notification-label"
+              aria-describedby="sticky-notification-help"
+            />
+            <span className="sr-only" id="sticky-notification-help">Desktop notification stays visible until you dismiss it</span>
           </label>
         </div>
       )}

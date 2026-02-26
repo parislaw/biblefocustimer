@@ -43,6 +43,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       break;
     }
+    case 'PLAY_TEST_SOUND': {
+      chrome.storage.sync.get('settings', (r) => {
+        const s = r.settings || {};
+        const soundUrl = getCompletionSoundUrl(s);
+        const volume = getCompletionSoundVolume(s);
+        playCompletionSoundViaOffscreen(soundUrl, volume)
+          .then(() => sendResponse({ ok: true }))
+          .catch((err) => {
+            console.error('Test sound failed:', err);
+            sendResponse({ ok: false });
+          });
+      });
+      return true;
+    }
     default:
       break;
   }
@@ -110,6 +124,7 @@ function handleResumeTimer({ remainingSeconds }) {
 function handleResetTimer() {
   chrome.alarms.clear(ALARM_NAME);
   chrome.storage.local.remove('timerState');
+  chrome.storage.local.set({ cycleCount: 0 });
   updateBadge('', '');
 }
 
@@ -128,29 +143,93 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 // ─── Completion Logic ─────────────────────────────────────────────────────────
 
 function handleTimerComplete(phase) {
-  if (phase === 'focus') {
-    showNotification('Focus session complete', 'Well done. Time for a break.');
+  const isFocus = phase === 'focus';
+  if (isFocus) {
     updateBadge('!', '#6B8F71');
-  } else if (phase === 'break') {
-    showNotification('Break is over', 'Ready for another focus session?');
+    chrome.storage.local.get('cycleCount', (r) => {
+      const next = (typeof r.cycleCount === 'number' ? r.cycleCount : 0) + 1;
+      chrome.storage.local.set({ cycleCount: next });
+    });
+  } else {
     updateBadge('', '');
   }
+
+  chrome.storage.sync.get('settings', (syncResult) => {
+    const settings = syncResult.settings || {};
+    const stickyNotification = settings.stickyNotification !== false;
+    const playCompletionSound = settings.playCompletionSound !== false;
+
+    const title = isFocus ? 'Focus session complete' : 'Break is over';
+    const message = isFocus ? 'Well done. Time for a break.' : 'Ready for another focus session?';
+    showNotification(title, message, stickyNotification);
+
+    if (playCompletionSound) {
+      const soundUrl = getCompletionSoundUrl(settings);
+      const volume = getCompletionSoundVolume(settings);
+      playCompletionSoundViaOffscreen(soundUrl, volume);
+    }
+  });
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function showNotification(title, message) {
+function showNotification(title, message, requireInteraction = true) {
   chrome.notifications.create({
     type: 'basic',
     iconUrl: 'icons/icon128.png',
     title,
     message,
     silent: false,
+    requireInteraction: !!requireInteraction,
   }, () => {
     if (chrome.runtime.lastError) {
       console.error('Failed to create notification:', chrome.runtime.lastError);
     }
   });
+}
+
+const OFFSCREEN_URL = 'offscreen.html';
+const OFFSCREEN_REASON = 'AUDIO_PLAYBACK';
+const OFFSCREEN_JUSTIFICATION = 'Play completion sound when focus or break timer ends';
+
+const SOUND_FILES = {
+  complete: 'complete.mp3',
+  extraterrestrial: 'alert-extraterrestrial.mp3',
+  dragon: 'alert-dragon.mp3',
+};
+
+function getCompletionSoundUrl(settings) {
+  const id = settings.completionSoundId || 'complete';
+  const file = SOUND_FILES[id] || SOUND_FILES.complete;
+  return chrome.runtime.getURL('sounds/' + file);
+}
+
+function getCompletionSoundVolume(settings) {
+  const v = settings.completionSoundVolume;
+  if (typeof v !== 'number' || v < 0 || v > 100) return 0.8;
+  return v / 100;
+}
+
+async function ensureOffscreenDocument() {
+  const existing = await chrome.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT'],
+    documentUrls: [chrome.runtime.getURL(OFFSCREEN_URL)],
+  });
+  if (existing.length > 0) return;
+  await chrome.offscreen.createDocument({
+    url: OFFSCREEN_URL,
+    reasons: [OFFSCREEN_REASON],
+    justification: OFFSCREEN_JUSTIFICATION,
+  });
+}
+
+function playCompletionSoundViaOffscreen(soundUrl, volume = 0.8) {
+  return ensureOffscreenDocument()
+    .then(() => chrome.runtime.sendMessage({ type: 'PLAY_COMPLETION_SOUND', soundUrl, volume }))
+    .catch((err) => {
+      console.error('Completion sound failed:', err);
+      throw err;
+    });
 }
 
 function updateBadge(text, color) {

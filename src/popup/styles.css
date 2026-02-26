@@ -493,6 +493,37 @@ html, body {
   border-color: var(--accent);
 }
 
+.setting-row-volume {
+  flex-wrap: wrap;
+}
+
+.setting-volume-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-row input[type="range"] {
+  flex: 1;
+  min-width: 100px;
+  height: 6px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.setting-volume-value {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 2.5em;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
 .settings-footer {
   margin-top: auto;
   padding-top: 16px;

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Offscreen</title>
+</head>
+<body>
+  <script>
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === 'PLAY_COMPLETION_SOUND') {
+        const soundUrl = message.soundUrl || chrome.runtime.getURL('sounds/complete.mp3');
+        const volume = typeof message.volume === 'number' ? Math.max(0, Math.min(1, message.volume)) : 0.8;
+        const audio = new Audio(soundUrl);
+        audio.volume = volume;
+        audio.play().then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+        return true;
+      }
+    });
+  </script>
+</body>
+</html>
