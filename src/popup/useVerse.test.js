@@ -1,36 +1,23 @@
+import React from 'react';
 import { renderHook, act } from '@testing-library/react';
+import { PlatformProvider } from '../platform';
+import { createMockPlatform, createMockPlatformWithCustomVerses } from './testPlatform';
 import { useVerse } from './useVerse';
-import * as customStorage from './customVerseStorage';
-
-jest.mock('./customVerseStorage');
 
 const defaultSettings = {
   theme: 'random',
   translation: 'esv',
 };
 
-// Mock chrome API
-beforeEach(() => {
-  global.chrome = {
-    storage: {
-      local: {
-        get: jest.fn((key, cb) => cb({ customVerses: [] })),
-        set: jest.fn((payload, cb) => cb && cb()),
-      },
-      onChanged: {
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-      },
-    },
-    runtime: {
-      lastError: null,
-    },
-  };
-});
+const wrapper = ({ children }) => (
+  <PlatformProvider platform={createMockPlatform()}>
+    {children}
+  </PlatformProvider>
+);
 
 describe('useVerse', () => {
   it('selectVerse sets a verse with correct translation', () => {
-    const { result } = renderHook(() => useVerse(defaultSettings));
+    const { result } = renderHook(() => useVerse(defaultSettings), { wrapper });
     expect(result.current.currentVerse).toBeNull();
     act(() => {
       result.current.selectVerse();
@@ -42,7 +29,7 @@ describe('useVerse', () => {
   });
 
   it('selectReflection sets a reflection string', () => {
-    const { result } = renderHook(() => useVerse(defaultSettings));
+    const { result } = renderHook(() => useVerse(defaultSettings), { wrapper });
     expect(result.current.currentReflection).toBe('');
     act(() => {
       result.current.selectReflection('preFocus');
@@ -52,20 +39,21 @@ describe('useVerse', () => {
   });
 
   it('filteres by theme when settings.theme is not random', () => {
-    const { result } = renderHook(() =>
-      useVerse({ ...defaultSettings, theme: 'wisdom' })
+    const { result } = renderHook(
+      () => useVerse({ ...defaultSettings, theme: 'wisdom' }),
+      { wrapper }
     );
     act(() => {
       result.current.selectVerse();
     });
     expect(result.current.currentVerse).not.toBeNull();
-    // Verse should be from wisdom theme (we can't assert content without importing verses)
     expect(result.current.currentVerse.text).toBeDefined();
   });
 
   it('does not throw when theme has no verses (falls back to all)', () => {
-    const { result } = renderHook(() =>
-      useVerse({ ...defaultSettings, theme: 'nonexistent' })
+    const { result } = renderHook(
+      () => useVerse({ ...defaultSettings, theme: 'nonexistent' }),
+      { wrapper }
     );
     expect(() => {
       act(() => {
@@ -77,10 +65,6 @@ describe('useVerse', () => {
 });
 
 describe('useVerse with custom verses', () => {
-  beforeEach(() => {
-    customStorage.getCustomVerses.mockClear();
-  });
-
   it('merges custom verses with curated verses', (done) => {
     const customVerses = [
       {
@@ -91,18 +75,18 @@ describe('useVerse with custom verses', () => {
         niv: 'For God so loved the world...',
       },
     ];
+    const platform = createMockPlatformWithCustomVerses(customVerses);
+    const w = ({ children }) => <PlatformProvider platform={platform}>{children}</PlatformProvider>;
 
-    customStorage.getCustomVerses.mockImplementation((cb) => {
-      cb(customVerses);
-    });
-
-    const { result } = renderHook(() => useVerse({ theme: 'custom', translation: 'esv' }));
+    const { result } = renderHook(
+      () => useVerse({ theme: 'custom', translation: 'esv' }),
+      { wrapper: w }
+    );
 
     act(() => {
       result.current.selectVerse();
     });
 
-    // Wait for async operation
     setTimeout(() => {
       expect(result.current.currentVerse).toBeDefined();
       expect(result.current.currentVerse.reference).toBe('John 3:16');
@@ -119,12 +103,13 @@ describe('useVerse with custom verses', () => {
         esv: 'For God so loved the world...',
       },
     ];
+    const platform = createMockPlatformWithCustomVerses(customVerses);
+    const w = ({ children }) => <PlatformProvider platform={platform}>{children}</PlatformProvider>;
 
-    customStorage.getCustomVerses.mockImplementation((cb) => {
-      cb(customVerses);
-    });
-
-    const { result } = renderHook(() => useVerse({ theme: 'random', translation: 'esv' }));
+    const { result } = renderHook(
+      () => useVerse({ theme: 'random', translation: 'esv' }),
+      { wrapper: w }
+    );
 
     act(() => {
       result.current.selectVerse();
@@ -137,18 +122,14 @@ describe('useVerse with custom verses', () => {
   });
 
   it('reactively updates when custom verses change via storage listener', (done) => {
-    let storageListenerCallback;
-    global.chrome.storage.onChanged.addListener.mockImplementation((cb) => {
-      storageListenerCallback = cb;
-    });
+    const platform = createMockPlatformWithCustomVerses([]);
+    const w = ({ children }) => <PlatformProvider platform={platform}>{children}</PlatformProvider>;
 
-    customStorage.getCustomVerses.mockImplementation((cb) => {
-      cb([]);
-    });
+    const { result } = renderHook(
+      () => useVerse({ theme: 'custom', translation: 'esv' }),
+      { wrapper: w }
+    );
 
-    const { result } = renderHook(() => useVerse({ theme: 'custom', translation: 'esv' }));
-
-    // Simulate storage change from another context
     setTimeout(() => {
       const newCustomVerses = [
         {
@@ -160,10 +141,9 @@ describe('useVerse with custom verses', () => {
       ];
 
       act(() => {
-        storageListenerCallback({ customVerses: { newValue: newCustomVerses } }, 'local');
+        platform.notifyCustomVersesChanged(newCustomVerses);
       });
 
-      // Now select should pick from updated verses
       act(() => {
         result.current.selectVerse();
       });
@@ -175,17 +155,18 @@ describe('useVerse with custom verses', () => {
   });
 
   it('selectVerse handles empty custom verses by falling back to curated verses', () => {
-    customStorage.getCustomVerses.mockImplementation((cb) => {
-      cb([]);
-    });
+    const platform = createMockPlatformWithCustomVerses([]);
+    const w = ({ children }) => <PlatformProvider platform={platform}>{children}</PlatformProvider>;
 
-    const { result } = renderHook(() => useVerse({ theme: 'custom', translation: 'esv' }));
+    const { result } = renderHook(
+      () => useVerse({ theme: 'custom', translation: 'esv' }),
+      { wrapper: w }
+    );
 
     act(() => {
       result.current.selectVerse();
     });
 
-    // When custom theme is selected but no custom verses exist, falls back to curated verses
     expect(result.current.currentVerse).not.toBeNull();
     expect(result.current.currentVerse.reference).toBeDefined();
   });

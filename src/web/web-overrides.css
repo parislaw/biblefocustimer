@@ -1,0 +1,14 @@
+/* Standalone web layout: full-width page, centered app card */
+.app-web-body {
+  width: auto;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.app-web .app {
+  width: 360px;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 480px;
+  box-shadow: 0 4px 24px var(--shadow);
+}

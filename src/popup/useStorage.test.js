@@ -1,5 +1,14 @@
+import React from 'react';
 import { renderHook, act } from '@testing-library/react';
+import { PlatformProvider } from '../platform';
+import { createMockPlatform } from './testPlatform';
 import { useSettings, DEFAULT_SETTINGS } from './useStorage';
+
+const wrapper = ({ children }) => (
+  <PlatformProvider platform={createMockPlatform()}>
+    {children}
+  </PlatformProvider>
+);
 
 describe('useSettings', () => {
   beforeEach(() => {
@@ -7,13 +16,13 @@ describe('useSettings', () => {
   });
 
   it('returns default settings and loaded true when storage is empty', () => {
-    const { result } = renderHook(() => useSettings());
+    const { result } = renderHook(() => useSettings(), { wrapper });
     expect(result.current.loaded).toBe(true);
     expect(result.current.settings).toEqual(DEFAULT_SETTINGS);
   });
 
   it('updateSettings merges with current settings', () => {
-    const { result } = renderHook(() => useSettings());
+    const { result } = renderHook(() => useSettings(), { wrapper });
     act(() => {
       result.current.updateSettings({ focusDuration: 30 });
     });
@@ -22,7 +31,7 @@ describe('useSettings', () => {
   });
 
   it('updateSettings merges multiple keys', () => {
-    const { result } = renderHook(() => useSettings());
+    const { result } = renderHook(() => useSettings(), { wrapper });
     act(() => {
       result.current.updateSettings({ theme: 'peace', focusDuration: 20 });
     });

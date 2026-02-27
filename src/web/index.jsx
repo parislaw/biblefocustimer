@@ -1,9 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { PlatformProvider } from '../platform';
-import { chromePlatform } from '../platform/chromePlatform';
-import App from './App';
-import './styles.css';
+import { webPlatform } from '../platform/webPlatform';
+import App from '../popup/App';
+import '../popup/styles.css';
+import './web-overrides.css';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -22,9 +23,9 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="app" style={{ padding: '24px', textAlign: 'center' }}>
+        <div className="app app-web" style={{ padding: '24px', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-            Something went wrong. Please close and reopen the extension.
+            Something went wrong. Please refresh the page.
           </p>
         </div>
       );
@@ -36,8 +37,10 @@ class ErrorBoundary extends React.Component {
 const root = createRoot(document.getElementById('root'));
 root.render(
   <ErrorBoundary>
-    <PlatformProvider platform={chromePlatform}>
-      <App />
+    <PlatformProvider platform={webPlatform}>
+      <div className="app-web">
+        <App />
+      </div>
     </PlatformProvider>
   </ErrorBoundary>
 );

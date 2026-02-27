@@ -1,53 +1,44 @@
 import { useState, useCallback, useEffect } from 'react';
+import { usePlatform } from '../platform';
 import verses from '../data/verses';
 import reflections from '../data/reflections';
-import { getCustomVerses } from './customVerseStorage';
 
-/**
- * Pick a random element from an array
- */
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 /**
- * Hook to manage verse selection based on theme and translation settings.
- * Merges custom verses with curated verses.
+ * Hook to manage verse selection and custom verses via platform.
  */
 export function useVerse(settings) {
+  const platform = usePlatform();
   const [currentVerse, setCurrentVerse] = useState(null);
   const [currentReflection, setCurrentReflection] = useState('');
   const [customVerses, setCustomVerses] = useState([]);
 
-  // Load custom verses on mount and listen for storage changes
   useEffect(() => {
-    getCustomVerses((loadedVerses) => {
+    platform.getCustomVerses((loadedVerses) => {
       setCustomVerses(loadedVerses || []);
     });
 
-    // Listen for real-time updates when verses are added/edited/deleted
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      const handleStorageChange = (changes, area) => {
-        if (area === 'local' && changes.customVerses) {
-          setCustomVerses(changes.customVerses.newValue || []);
-        }
-      };
-      chrome.storage.onChanged.addListener(handleStorageChange);
-      return () => chrome.storage.onChanged.removeListener(handleStorageChange);
-    }
-  }, []);
+    const removeListener = platform.addCustomVersesListener?.((next) => {
+      setCustomVerses(Array.isArray(next) ? next : []);
+    });
+    return () => { if (removeListener) removeListener(); };
+  }, [platform]);
+
+  const persistCustomVerses = useCallback((versesList, callback) => {
+    platform.setCustomVerses(versesList, () => {
+      setCustomVerses(versesList);
+      if (callback) callback();
+    });
+  }, [platform]);
 
   const getFilteredVerses = useCallback(() => {
-    // Combine curated + custom verses
     const allVerses = [...verses, ...customVerses];
 
-    if (settings.theme === 'random') {
-      return allVerses;
-    }
-
-    if (settings.theme === 'custom') {
-      return customVerses.length > 0 ? customVerses : verses;
-    }
+    if (settings.theme === 'random') return allVerses;
+    if (settings.theme === 'custom') return customVerses.length > 0 ? customVerses : verses;
 
     const themed = allVerses.filter((v) => v.theme === settings.theme);
     return themed.length > 0 ? themed : allVerses;
@@ -76,6 +67,8 @@ export function useVerse(settings) {
   return {
     currentVerse,
     currentReflection,
+    customVerses,
+    persistCustomVerses,
     selectVerse,
     selectReflection,
   };

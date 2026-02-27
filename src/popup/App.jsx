@@ -109,6 +109,8 @@ export default function App() {
         <SettingsView
           settings={settings}
           updateSettings={updateSettings}
+          customVerses={verse.customVerses}
+          persistCustomVerses={verse.persistCustomVerses}
           onClose={() => setShowSettings(false)}
         />
       </div>

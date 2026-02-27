@@ -232,10 +232,15 @@ Contributions are welcome! Please:
 
 ## 📋 Roadmap
 
+### Platforms
+- [ ] **Standalone web app** — Use Selah Focus in any browser; same features, no extension install. (See [web-app](https://github.com/parislaw/biblefocustimer/tree/web-app) branch.)
+- [ ] **Native iOS app** — Native mobile experience; on the roadmap.
+- [ ] **Android app** — Native Android experience; on the roadmap.
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for phases and mobile considerations.
+
 ### Planned Features
 - [ ] Statistics dashboard (sessions completed, focus time)
-- [ ] Custom verses and reflections
-- [ ] Sound options for timer completion
 - [ ] Dark mode and additional themes
 - [ ] Multiple languages
 

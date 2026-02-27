@@ -46,7 +46,8 @@ KEY FEATURES
 - Settings stored locally on your device
 
 🔔 Notifications
-- Desktop notification when focus or break sessions complete
+- Desktop notification when focus or break sessions complete (optional: keep until dismissed)
+- Optional completion sound when a session ends
 - Extension badge shows active focus status
 
 ♿ Accessibility
@@ -111,6 +112,11 @@ When prompted in the Developer Console to justify permissions:
 
 **alarms**
 > Used to keep the timer countdown running accurately in the background when the extension popup is closed. Without this, the timer would stop the moment you clicked away.
+
+**offscreen**
+> Used only to play the completion sound when a focus or break session ends. The sound is played from files stored in the extension. No data is sent.
+
+Completion sound and "keep notification until dismissed" are user-controllable in Settings (Timer tab).
 
 ---
 

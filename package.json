@@ -5,8 +5,9 @@
   "private": true,
   "scripts": {
     "build": "webpack --mode production",
+    "build:web": "webpack --config webpack.web.config.js --mode production",
     "dev": "webpack --mode development --watch",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist dist-web",
     "test": "jest"
   },
   "devDependencies": {

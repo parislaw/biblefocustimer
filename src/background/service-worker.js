@@ -43,19 +43,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       break;
     }
-    case 'PLAY_TEST_SOUND': {
-      chrome.storage.sync.get('settings', (r) => {
-        const s = r.settings || {};
-        const soundUrl = getCompletionSoundUrl(s);
-        const volume = getCompletionSoundVolume(s);
-        playCompletionSoundViaOffscreen(soundUrl, volume)
-          .then(() => sendResponse({ ok: true }))
-          .catch((err) => {
-            console.error('Test sound failed:', err);
-            sendResponse({ ok: false });
+    case 'PLAY_TEST_SOUND':
+    case 'PLAY_COMPLETION_SOUND': {
+      const soundUrl = message.soundUrl;
+      const volume = message.volume;
+      const promise = (soundUrl != null && typeof volume === 'number')
+        ? playCompletionSoundViaOffscreen(soundUrl, volume)
+        : new Promise((resolve, reject) => {
+            chrome.storage.sync.get('settings', (r) => {
+              const s = r.settings || {};
+              playCompletionSoundViaOffscreen(getCompletionSoundUrl(s), getCompletionSoundVolume(s)).then(resolve).catch(reject);
+            });
           });
+      promise.then(() => sendResponse({ ok: true })).catch((err) => {
+        console.error('Completion sound failed:', err);
+        sendResponse({ ok: false });
       });
       return true;
+    }
+    case 'SHOW_NOTIFICATION': {
+      if (message.title != null && message.message != null) {
+        showNotification(message.title, message.message);
+      }
+      break;
     }
     default:
       break;

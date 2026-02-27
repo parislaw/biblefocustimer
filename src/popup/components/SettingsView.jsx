@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { usePlatform } from '../../platform';
 import CustomVerseForm from './CustomVerseForm';
 import CustomVerseList from './CustomVerseList';
-import { getCustomVerses, setCustomVerses as persistCustomVerses } from '../customVerseStorage';
 
 const TRANSLATIONS = [
   { value: 'esv', label: 'ESV' },
@@ -20,22 +20,17 @@ const THEMES = [
 
 const COMPLETION_SOUNDS = [
   { id: 'complete', label: 'Alert', file: 'complete.mp3' },
-  { id: 'extraterrestrial', label: 'Extraterrestrial', file: 'alert-extraterrestrial.mp3' },
-  { id: 'dragon', label: 'Dragon', file: 'alert-dragon.mp3' },
+  { id: 'extraterrestrial', label: 'Extraterrestrial', file: 'extraterrestrial-alert.mp3' },
+  { id: 'dragon', label: 'Dragon', file: 'dragon-studio-alert.mp3' },
+  { id: 'alert-sound', label: 'Alert Sound', file: 'alert-sound.mp3' },
 ];
 
-export default function SettingsView({ settings, updateSettings, onClose }) {
+export default function SettingsView({ settings, updateSettings, customVerses = [], persistCustomVerses, onClose }) {
+  const platform = usePlatform();
   const [activeTab, setActiveTab] = useState('timer');
-  const [customVerses, setCustomVerses] = useState([]);
   const [editingVerse, setEditingVerse] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [testingSound, setTestingSound] = useState(false);
-
-  useEffect(() => {
-    getCustomVerses((verses) => {
-      setCustomVerses(verses || []);
-    });
-  }, []);
 
   const validateNumericInput = (value, min, max, defaultValue) => {
     const parsed = parseInt(value);
@@ -69,12 +64,10 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
   };
 
   const handleTestSound = () => {
-    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
     setTestingSound(true);
-    chrome.runtime.sendMessage({ type: 'PLAY_TEST_SOUND' }, () => {
-      if (chrome.runtime.lastError) console.warn(chrome.runtime.lastError);
-      setTestingSound(false);
-    });
+    const url = platform.getCompletionSoundUrl(settings);
+    const volume = platform.getCompletionSoundVolume(settings);
+    platform.playCompletionSound(url, volume).finally(() => setTestingSound(false));
   };
 
   const handleAddVerse = (verseData) => {
@@ -82,19 +75,14 @@ export default function SettingsView({ settings, updateSettings, onClose }) {
       ? customVerses.map((v) => (v.id === verseData.id ? verseData : v))
       : [...customVerses, verseData];
 
-    setCustomVerses(updatedVerses);
     setEditingVerse(null);
     setShowForm(false);
-
-    persistCustomVerses(updatedVerses, () => {
-      // Callback after storage
-    });
+    if (persistCustomVerses) persistCustomVerses(updatedVerses);
   };
 
   const handleDeleteVerse = (verseId) => {
     const updatedVerses = customVerses.filter((v) => v.id !== verseId);
-    setCustomVerses(updatedVerses);
-    persistCustomVerses(updatedVerses);
+    if (persistCustomVerses) persistCustomVerses(updatedVerses);
   };
 
   const handleEditVerse = (verse) => {

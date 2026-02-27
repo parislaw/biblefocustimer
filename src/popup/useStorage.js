@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { usePlatform } from '../platform';
 
-const DEFAULT_SETTINGS = {
+export const DEFAULT_SETTINGS = {
   focusDuration: 25,
   shortBreakDuration: 5,
   longBreakDuration: 15,
@@ -16,58 +17,25 @@ const DEFAULT_SETTINGS = {
 };
 
 /**
- * Custom hook for Chrome storage sync with fallback to localStorage.
+ * Custom hook for settings storage via platform (Chrome sync or localStorage).
  */
 export function useSettings() {
+  const platform = usePlatform();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-      chrome.storage.sync.get('settings', (result) => {
-        if (chrome.runtime.lastError) {
-          console.error('Failed to load settings from Chrome storage:', chrome.runtime.lastError);
-        } else if (result.settings) {
-          setSettings({ ...DEFAULT_SETTINGS, ...result.settings });
-        }
-        setLoaded(true);
-      });
-    } else {
-      try {
-        const stored = localStorage.getItem('selah-settings');
-        if (stored) {
-          setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
-        }
-      } catch (e) {
-        console.error('Failed to load settings from localStorage:', e);
-      }
+    platform.getSettings((stored) => {
+      if (stored) setSettings({ ...DEFAULT_SETTINGS, ...stored });
       setLoaded(true);
-    }
-  }, []);
+    });
+  }, [platform]);
 
   const updateSettings = (newSettings) => {
     const merged = { ...settings, ...newSettings };
     setSettings(merged);
-
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-      chrome.storage.sync.set({ settings: merged }, () => {
-        if (chrome.runtime.lastError) {
-          console.error('Failed to save settings to Chrome storage:', chrome.runtime.lastError);
-        }
-      });
-    } else {
-      try {
-        localStorage.setItem('selah-settings', JSON.stringify(merged));
-      } catch (e) {
-        console.error('Failed to save settings to localStorage:', e);
-        if (e.name === 'QuotaExceededError') {
-          console.error('Storage quota exceeded. Please clear browser data.');
-        }
-      }
-    }
+    platform.setSettings(merged);
   };
 
   return { settings, updateSettings, loaded };
 }
-
-export { DEFAULT_SETTINGS };

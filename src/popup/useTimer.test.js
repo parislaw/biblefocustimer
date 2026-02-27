@@ -1,4 +1,7 @@
+import React from 'react';
 import { renderHook, act } from '@testing-library/react';
+import { PlatformProvider } from '../platform';
+import { createMockPlatform } from './testPlatform';
 import { useTimer } from './useTimer';
 
 const defaultSettings = {
@@ -10,6 +13,12 @@ const defaultSettings = {
   scriptureEnabled: false,
 };
 
+const wrapper = ({ children }) => (
+  <PlatformProvider platform={createMockPlatform()}>
+    {children}
+  </PlatformProvider>
+);
+
 describe('useTimer', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -20,7 +29,7 @@ describe('useTimer', () => {
   });
 
   it('starts in idle phase', () => {
-    const { result } = renderHook(() => useTimer(defaultSettings));
+    const { result } = renderHook(() => useTimer(defaultSettings), { wrapper });
     expect(result.current.phase).toBe('idle');
     expect(result.current.secondsLeft).toBe(25 * 60);
     expect(result.current.isRunning).toBe(false);
@@ -28,7 +37,7 @@ describe('useTimer', () => {
   });
 
   it('startFocusSession with scripture disabled goes to focus and starts running', () => {
-    const { result } = renderHook(() => useTimer(defaultSettings));
+    const { result } = renderHook(() => useTimer(defaultSettings), { wrapper });
     act(() => {
       result.current.startFocusSession();
     });
@@ -38,7 +47,7 @@ describe('useTimer', () => {
   });
 
   it('pause stops the timer', () => {
-    const { result } = renderHook(() => useTimer(defaultSettings));
+    const { result } = renderHook(() => useTimer(defaultSettings), { wrapper });
     act(() => {
       result.current.startFocusSession();
     });
@@ -50,7 +59,7 @@ describe('useTimer', () => {
   });
 
   it('reset returns to idle and zeroes cycleCount', () => {
-    const { result } = renderHook(() => useTimer(defaultSettings));
+    const { result } = renderHook(() => useTimer(defaultSettings), { wrapper });
     act(() => {
       result.current.startFocusSession();
     });
@@ -63,7 +72,7 @@ describe('useTimer', () => {
   });
 
   it('countdown decreases secondsLeft every second', () => {
-    const { result } = renderHook(() => useTimer(defaultSettings));
+    const { result } = renderHook(() => useTimer(defaultSettings), { wrapper });
     act(() => {
       result.current.startFocusSession();
     });
@@ -75,7 +84,7 @@ describe('useTimer', () => {
   });
 
   it('skipBreak returns to idle', () => {
-    const { result } = renderHook(() => useTimer(defaultSettings));
+    const { result } = renderHook(() => useTimer(defaultSettings), { wrapper });
     act(() => {
       result.current.startFocusSession();
     });

@@ -1,33 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { usePlatform } from '../platform';
 
 /**
- * Timer phases:
- * - idle: no timer running, initial state
- * - preFocus: showing verse before focus begins
- * - focus: focus session active (alarm running in service worker)
- * - break: short or long break (alarm running in service worker)
- *
- * The actual countdown is owned by the service worker via chrome.alarms so it
- * survives popup close. This hook derives the display by polling
- * chrome.storage.local every second.
+ * Timer phases: idle, preFocus, focus, break.
+ * Countdown is owned by the platform (Chrome: alarms + storage; Web: in-page interval + localStorage).
+ * This hook polls platform.getTimerState every second when running.
  */
 
-function sendToWorker(message) {
-  if (typeof chrome !== 'undefined' && chrome.runtime) {
-    chrome.runtime.sendMessage(message);
-  }
-}
-
 export function useTimer(settings) {
+  const platform = usePlatform();
   const [phase, setPhase] = useState('idle');
   const [secondsLeft, setSecondsLeft] = useState(settings.focusDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [cycleCount, setCycleCount] = useState(0);
   const [isLongBreak, setIsLongBreak] = useState(false);
 
-  // Track whether completion has been handled to prevent double-fire
   const completionFiredRef = useRef(false);
-  // Store phase/cycleCount in a ref so alarm callback always reads latest value
   const phaseRef = useRef(phase);
   const cycleCountRef = useRef(cycleCount);
   const settingsRef = useRef(settings);
@@ -36,55 +24,44 @@ export function useTimer(settings) {
   useEffect(() => { cycleCountRef.current = cycleCount; }, [cycleCount]);
   useEffect(() => { settingsRef.current = settings; }, [settings]);
 
-  // Sync display seconds when idle and settings change
   useEffect(() => {
     if (phase === 'idle') {
       setSecondsLeft(settings.focusDuration * 60);
     }
   }, [settings.focusDuration, phase]);
 
-  // Reconnect to a timer that was running when the popup was closed
   useEffect(() => {
-    if (typeof chrome === 'undefined' || !chrome.storage) return;
+    platform.getTimerState(({ timerState, cycleCount: storedCycle }) => {
+      setCycleCount(typeof storedCycle === 'number' ? storedCycle : 0);
+      if (!timerState) return;
 
-    chrome.storage.local.get('timerState', (result) => {
-      if (chrome.runtime.lastError || !result.timerState) return;
-
-      const { phase: savedPhase, startedAt, durationSeconds, isPaused, remainingAtPause } = result.timerState;
+      const { phase: savedPhase, startedAt, durationSeconds, isPaused, remainingAtPause } = timerState;
 
       if (isPaused) {
         setPhase(savedPhase);
-        setSecondsLeft(Math.round(remainingAtPause));
-        // isRunning stays false — user must manually resume
+        setSecondsLeft(Math.round(remainingAtPause ?? 0));
         return;
       }
 
       const elapsed = (Date.now() - startedAt) / 1000;
       const remaining = Math.max(0, Math.round(durationSeconds - elapsed));
 
-      if (remaining <= 0) return; // alarm already fired; service worker handled completion
+      if (remaining <= 0) return;
 
       setPhase(savedPhase);
       setSecondsLeft(remaining);
-      setIsRunning(true); // activates the polling interval
+      setIsRunning(true);
     });
-  }, []); // run once on mount only
+  }, [platform]);
 
-  // Poll storage every second to derive remaining time from alarm start timestamp
   useEffect(() => {
     if (!isRunning) return;
 
     const id = setInterval(() => {
-      if (typeof chrome === 'undefined' || !chrome.storage) {
-        // Fallback for non-extension environment (tests/dev)
-        setSecondsLeft((prev) => Math.max(0, prev - 1));
-        return;
-      }
+      platform.getTimerState(({ timerState }) => {
+        if (!timerState) return;
 
-      chrome.storage.local.get('timerState', (result) => {
-        if (chrome.runtime.lastError || !result.timerState) return;
-
-        const { startedAt, durationSeconds, isPaused, remainingAtPause } = result.timerState;
+        const { startedAt, durationSeconds, isPaused, remainingAtPause } = timerState;
 
         if (isPaused) return;
 
@@ -95,20 +72,17 @@ export function useTimer(settings) {
     }, 1000);
 
     return () => clearInterval(id);
-  }, [isRunning]);
+  }, [isRunning, platform]);
 
-  // Handle timer reaching zero — poll-detected or storage-confirmed
   useEffect(() => {
     if (secondsLeft === 0 && isRunning && !completionFiredRef.current) {
       completionFiredRef.current = true;
       setIsRunning(false);
+      const s = settingsRef.current;
+      platform.onTimerComplete(phaseRef.current, s);
       onTimerComplete();
     }
-  // onTimerComplete is stable (useCallback with refs) — safe to omit from deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secondsLeft, isRunning]);
-
-  // ── startFocusSession ────────────────────────────────────────────────────
+  }, [secondsLeft, isRunning, platform]);
 
   const startFocusSession = useCallback(() => {
     completionFiredRef.current = false;
@@ -122,11 +96,9 @@ export function useTimer(settings) {
       setPhase('focus');
       setSecondsLeft(durationSeconds);
       setIsRunning(true);
-      sendToWorker({ type: 'START_TIMER', phase: 'focus', durationSeconds });
+      platform.startTimer('focus', durationSeconds);
     }
-  }, []); // uses settingsRef — stable
-
-  // ── beginFocusFromPreFocus ───────────────────────────────────────────────
+  }, [platform]);
 
   const beginFocusFromPreFocus = useCallback(() => {
     completionFiredRef.current = false;
@@ -135,10 +107,8 @@ export function useTimer(settings) {
     setPhase('focus');
     setSecondsLeft(durationSeconds);
     setIsRunning(true);
-    sendToWorker({ type: 'START_TIMER', phase: 'focus', durationSeconds });
-  }, []); // uses settingsRef — stable
-
-  // ── Timer completion (called locally; alarm fires notification in worker) ──
+    platform.startTimer('focus', durationSeconds);
+  }, [platform]);
 
   const onTimerComplete = useCallback(() => {
     const currentPhase = phaseRef.current;
@@ -148,6 +118,7 @@ export function useTimer(settings) {
     if (currentPhase === 'focus') {
       const newCycleCount = currentCycleCount + 1;
       setCycleCount(newCycleCount);
+      platform.setCycleCount(newCycleCount);
 
       const shouldLongBreak =
         s.cyclesBeforeLongBreak > 0 &&
@@ -166,7 +137,7 @@ export function useTimer(settings) {
 
       if (s.autoStartNext) {
         setIsRunning(true);
-        sendToWorker({ type: 'START_TIMER', phase: 'break', durationSeconds });
+        platform.startTimer('break', durationSeconds);
       }
     } else if (currentPhase === 'break') {
       setPhase('idle');
@@ -174,28 +145,25 @@ export function useTimer(settings) {
       completionFiredRef.current = false;
 
       if (s.autoStartNext) {
-        // startFocusSession reads settingsRef internally
         startFocusSession();
       }
     }
-  }, [startFocusSession]); // all other reads via refs
-
-  // ── Pause / Resume / Reset / Skip ────────────────────────────────────────
+  }, [platform, startFocusSession]);
 
   const pause = useCallback(() => {
     setIsRunning(false);
-    sendToWorker({ type: 'PAUSE_TIMER' });
-  }, []);
+    platform.pauseTimer();
+  }, [platform]);
 
   const resume = useCallback(() => {
     setSecondsLeft((prev) => {
       if (prev > 0 && (phaseRef.current === 'focus' || phaseRef.current === 'break')) {
         setIsRunning(true);
-        sendToWorker({ type: 'RESUME_TIMER', remainingSeconds: prev });
+        platform.resumeTimer(prev);
       }
       return prev;
     });
-  }, []);
+  }, [platform]);
 
   const reset = useCallback(() => {
     completionFiredRef.current = false;
@@ -204,8 +172,9 @@ export function useTimer(settings) {
     setSecondsLeft(settingsRef.current.focusDuration * 60);
     setCycleCount(0);
     setIsLongBreak(false);
-    sendToWorker({ type: 'RESET_TIMER' });
-  }, []);
+    platform.setCycleCount(0);
+    platform.resetTimer();
+  }, [platform]);
 
   const skipBreak = useCallback(() => {
     completionFiredRef.current = false;
@@ -213,8 +182,8 @@ export function useTimer(settings) {
     setPhase('idle');
     setSecondsLeft(settingsRef.current.focusDuration * 60);
     setIsLongBreak(false);
-    sendToWorker({ type: 'RESET_TIMER' });
-  }, []);
+    platform.resetTimer();
+  }, [platform]);
 
   return {
     phase,
