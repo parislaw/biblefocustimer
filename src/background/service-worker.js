@@ -204,8 +204,9 @@ const OFFSCREEN_JUSTIFICATION = 'Play completion sound when focus or break timer
 
 const SOUND_FILES = {
   complete: 'complete.mp3',
-  extraterrestrial: 'alert-extraterrestrial.mp3',
-  dragon: 'alert-dragon.mp3',
+  extraterrestrial: 'extraterrestrial-alert.mp3',
+  dragon: 'dragon-studio-alert.mp3',
+  'alert-sound': 'alert-sound.mp3',
 };
 
 function getCompletionSoundUrl(settings) {
