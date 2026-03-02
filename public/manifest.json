@@ -7,7 +7,7 @@
   "description": "A Pomodoro timer with Scripture-based focus rhythms. Work deeply, anchored in the Word.",
   "homepage_url": "https://parislaw.github.io/biblefocustimer/",
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self'; media-src 'self';"
   },
   "permissions": [
     "storage",

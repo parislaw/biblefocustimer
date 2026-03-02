@@ -1,11 +1,37 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-export default function IdleView({ settings, verse, cycleCount, onStartFocus, onOpenSettings }) {
+const QUICK_PRESETS = [
+  { type: 'focus', minutes: 25, label: '25 min focus' },
+  { type: 'focus', minutes: 10, label: '10 min' },
+  { type: 'focus', minutes: 30, label: '30 min' },
+  { type: 'break', minutes: 5, label: '5 min break' },
+  { type: 'break', minutes: 15, label: '15 min break' },
+];
+
+export default function IdleView({
+  settings,
+  verse,
+  cycleCount,
+  onStartFocus,
+  onOpenSettings,
+  isWeb,
+  onQuickFocus,
+  onQuickBreak,
+}) {
+  const [notifyPermission, setNotifyPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  );
+
   useEffect(() => {
     if (settings.scriptureEnabled && !verse.currentVerse) {
       verse.selectVerse();
     }
   }, []);
+
+  const requestNotificationPermission = () => {
+    if (typeof Notification === 'undefined') return;
+    Notification.requestPermission().then((p) => setNotifyPermission(p));
+  };
 
   return (
     <div className="view idle-view" role="main" aria-label="Selah Focus - Ready to begin">
@@ -63,6 +89,37 @@ export default function IdleView({ settings, verse, cycleCount, onStartFocus, on
       >
         Begin Focus Session
       </button>
+
+      {isWeb && onQuickFocus && onQuickBreak && (
+        <div className="quick-presets" role="group" aria-label="Quick start timers">
+          <span className="quick-presets-label">Quick start</span>
+          <div className="quick-presets-buttons">
+            {QUICK_PRESETS.map(({ type, minutes, label }) => (
+              <button
+                key={`${type}-${minutes}`}
+                type="button"
+                className="btn-quick-preset"
+                onClick={() => type === 'focus' ? onQuickFocus(minutes) : onQuickBreak(minutes)}
+                aria-label={`Start ${label}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isWeb && notifyPermission === 'default' && (
+        <div className="idle-notify-prompt" role="region" aria-label="Notification permission">
+          <button
+            type="button"
+            className="btn-text btn-text-sm"
+            onClick={requestNotificationPermission}
+          >
+            Allow notifications when timer ends
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { formatTime } from '../utils/time';
 // Announce only at meaningful milestones to avoid flooding screen readers every second
 const ANNOUNCE_AT_SECONDS = new Set([300, 60, 30, 10, 0]); // 5 min, 1 min, 30s, 10s, done
 
-export default function FocusView({ secondsLeft, isRunning, cycleCount, cyclesBeforeLongBreak = 4, onPause, onResume, onReset }) {
+export default function FocusView({ secondsLeft, isRunning, cycleCount, cyclesBeforeLongBreak = 4, sessionTotalSeconds, onPause, onResume, onReset }) {
   const [announcement, setAnnouncement] = useState('');
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function FocusView({ secondsLeft, isRunning, cycleCount, cyclesBe
   return (
     <div className="view focus-view" aria-label="Focus session in progress">
       <div className="focus-minimal">
-        <TimerDisplay secondsLeft={secondsLeft} label="Focus" />
+        <TimerDisplay secondsLeft={secondsLeft} label="Focus" totalSeconds={sessionTotalSeconds} />
 
         {/* Screen reader announcements at milestones only */}
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">

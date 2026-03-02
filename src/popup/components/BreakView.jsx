@@ -10,6 +10,7 @@ export default function BreakView({
   isRunning,
   isLongBreak,
   cycleCount,
+  sessionTotalSeconds,
   verse,
   reflection,
   settings,
@@ -44,7 +45,7 @@ export default function BreakView({
 
   return (
     <div className="view break-view" aria-label={`${label} - ${formatTime(secondsLeft)} remaining`}>
-      <TimerDisplay secondsLeft={secondsLeft} label={label} />
+      <TimerDisplay secondsLeft={secondsLeft} label={label} totalSeconds={sessionTotalSeconds} />
 
       {/* Screen reader announcements at milestones only */}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">

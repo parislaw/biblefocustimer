@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSettings } from './useStorage';
 import { useTimer } from './useTimer';
 import { useVerse } from './useVerse';
@@ -7,6 +7,8 @@ import PreFocusView from './components/PreFocusView';
 import FocusView from './components/FocusView';
 import BreakView from './components/BreakView';
 import SettingsView from './components/SettingsView';
+
+const isWeb = typeof window !== 'undefined' && !window.chrome?.runtime?.id;
 
 function isFormElement(target) {
   if (!target || !target.tagName) return false;
@@ -37,6 +39,34 @@ export default function App() {
       verse.selectReflection('break');
     }
   }, [settings.scriptureEnabled, verse]);
+
+  const handleQuickFocus = useCallback((minutes) => {
+    timer.startFocusWithDuration(minutes);
+  }, [timer]);
+
+  const handleQuickBreak = useCallback((minutes) => {
+    timer.startBreakWithDuration(minutes);
+  }, [timer]);
+
+  const urlPresetApplied = useRef(false);
+  useEffect(() => {
+    if (!loaded || !isWeb || urlPresetApplied.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const preset = params.get('preset');
+    const minutesParam = params.get('minutes');
+    const minutes = minutesParam ? parseInt(minutesParam, 10) : null;
+    if (preset === 'focus' || (minutes != null && minutes > 0 && !preset)) {
+      const mins = minutes != null && minutes > 0 ? Math.min(120, minutes) : settings.focusDuration;
+      urlPresetApplied.current = true;
+      timer.startFocusWithDuration(mins);
+      window.history.replaceState({}, '', window.location.pathname || '/');
+    } else if (preset === 'break') {
+      const mins = minutes != null && minutes > 0 ? Math.min(60, minutes) : settings.shortBreakDuration;
+      urlPresetApplied.current = true;
+      timer.startBreakWithDuration(mins);
+      window.history.replaceState({}, '', window.location.pathname || '/');
+    }
+  }, [loaded, isWeb, settings.focusDuration, settings.shortBreakDuration, timer]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -126,6 +156,9 @@ export default function App() {
           cycleCount={timer.cycleCount}
           onStartFocus={handleStartFocus}
           onOpenSettings={() => setShowSettings(true)}
+          isWeb={isWeb}
+          onQuickFocus={handleQuickFocus}
+          onQuickBreak={handleQuickBreak}
         />
       )}
 
@@ -144,6 +177,7 @@ export default function App() {
           isRunning={timer.isRunning}
           cycleCount={timer.cycleCount}
           cyclesBeforeLongBreak={settings.cyclesBeforeLongBreak}
+          sessionTotalSeconds={timer.sessionTotalSeconds}
           onPause={timer.pause}
           onResume={timer.resume}
           onReset={timer.reset}
@@ -156,6 +190,7 @@ export default function App() {
           isRunning={timer.isRunning}
           isLongBreak={timer.isLongBreak}
           cycleCount={timer.cycleCount}
+          sessionTotalSeconds={timer.sessionTotalSeconds}
           verse={verse.currentVerse}
           reflection={verse.currentReflection}
           settings={settings}

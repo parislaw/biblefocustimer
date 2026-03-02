@@ -263,8 +263,37 @@ html, body {
 
 /* Timer display */
 .timer-display {
+  position: relative;
   text-align: center;
   padding: 24px 0;
+}
+
+.timer-progress-ring {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.timer-progress-svg {
+  width: 200px;
+  height: 200px;
+}
+
+.timer-progress-bg {
+  stroke: var(--border);
+}
+
+.timer-progress-fill {
+  stroke: var(--accent);
+  transition: stroke-dashoffset 1s linear;
+}
+
+.timer-content {
+  position: relative;
+  z-index: 1;
 }
 
 .timer-label {

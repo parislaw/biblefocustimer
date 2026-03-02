@@ -14,6 +14,7 @@ export function useTimer(settings) {
   const [isRunning, setIsRunning] = useState(false);
   const [cycleCount, setCycleCount] = useState(0);
   const [isLongBreak, setIsLongBreak] = useState(false);
+  const [sessionTotalSeconds, setSessionTotalSeconds] = useState(settings.focusDuration * 60);
 
   const completionFiredRef = useRef(false);
   const phaseRef = useRef(phase);
@@ -40,6 +41,7 @@ export function useTimer(settings) {
       if (isPaused) {
         setPhase(savedPhase);
         setSecondsLeft(Math.round(remainingAtPause ?? 0));
+        setSessionTotalSeconds(durationSeconds);
         return;
       }
 
@@ -50,6 +52,7 @@ export function useTimer(settings) {
 
       setPhase(savedPhase);
       setSecondsLeft(remaining);
+      setSessionTotalSeconds(durationSeconds);
       setIsRunning(true);
     });
   }, [platform]);
@@ -95,6 +98,7 @@ export function useTimer(settings) {
       const durationSeconds = s.focusDuration * 60;
       setPhase('focus');
       setSecondsLeft(durationSeconds);
+      setSessionTotalSeconds(durationSeconds);
       setIsRunning(true);
       platform.startTimer('focus', durationSeconds);
     }
@@ -106,8 +110,32 @@ export function useTimer(settings) {
     const durationSeconds = s.focusDuration * 60;
     setPhase('focus');
     setSecondsLeft(durationSeconds);
+    setSessionTotalSeconds(durationSeconds);
     setIsRunning(true);
     platform.startTimer('focus', durationSeconds);
+  }, [platform]);
+
+  /** Start a focus session with a specific duration (minutes). Skips preFocus. */
+  const startFocusWithDuration = useCallback((minutes) => {
+    completionFiredRef.current = false;
+    const durationSeconds = Math.max(1, Math.min(120, minutes)) * 60;
+    setPhase('focus');
+    setSecondsLeft(durationSeconds);
+    setSessionTotalSeconds(durationSeconds);
+    setIsRunning(true);
+    platform.startTimer('focus', durationSeconds);
+  }, [platform]);
+
+  /** Start a break with a specific duration (minutes) from idle. */
+  const startBreakWithDuration = useCallback((minutes) => {
+    completionFiredRef.current = false;
+    const durationSeconds = Math.max(1, Math.min(60, minutes)) * 60;
+    setPhase('break');
+    setSecondsLeft(durationSeconds);
+    setSessionTotalSeconds(durationSeconds);
+    setIsLongBreak(minutes >= 10);
+    setIsRunning(true);
+    platform.startTimer('break', durationSeconds);
   }, [platform]);
 
   const onTimerComplete = useCallback(() => {
@@ -133,6 +161,7 @@ export function useTimer(settings) {
 
       setPhase('break');
       setSecondsLeft(durationSeconds);
+      setSessionTotalSeconds(durationSeconds);
       completionFiredRef.current = false;
 
       if (s.autoStartNext) {
@@ -191,8 +220,11 @@ export function useTimer(settings) {
     isRunning,
     cycleCount,
     isLongBreak,
+    sessionTotalSeconds,
     startFocusSession,
     beginFocusFromPreFocus,
+    startFocusWithDuration,
+    startBreakWithDuration,
     pause,
     resume,
     reset,
