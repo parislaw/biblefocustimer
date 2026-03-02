@@ -802,6 +802,11 @@ html, body {
    Desktop: 900px+
    ============================================== */
 
+/* Reset html/body from the 360px extension popup default */
+html:has(.app-web) {
+  width: 100%;
+}
+
 .app-web-body {
   width: 100%;
   min-height: 100vh;
@@ -865,76 +870,103 @@ html, body {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-/* --- Tablet (600px+) --- */
+/* --- Tablet (600px+): full-viewport, no card --- */
 @media (min-width: 600px) {
   .app-web-body {
-    padding: 24px 16px;
+    padding: 0;
   }
 
+  /* Full-viewport app — no card */
   .app-web .app {
-    width: 400px;
+    width: 100%;
     max-width: 100%;
-    min-height: 520px;
-    margin: 0 auto;
-    box-shadow: 0 4px 24px var(--shadow);
-    border-radius: var(--radius);
+    min-height: 100vh;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  /* Views fill and center content */
+  .app-web .view {
+    align-items: center;
+    padding: 48px 32px;
+  }
+
+  /* Header spans full width so title/icon stay at edges */
+  .app-web .view-header {
+    width: 100%;
+    max-width: 760px;
+  }
+
+  /* Idle view: top-aligned with breathing room */
+  .app-web .idle-view {
+    justify-content: flex-start;
+    padding-top: 48px;
+  }
+
+  /* Focus / Break / PreFocus: fully centered */
+  .app-web .focus-view,
+  .app-web .break-view,
+  .app-web .prefocus-view {
+    justify-content: center;
+  }
+
+  /* Settings view: stretch, not centered */
+  .app-web .settings-view {
+    align-items: stretch;
+  }
+
+  /* Timer scales with viewport using vmin (respects both axes) */
+  .app-web .timer-display {
+    min-height: clamp(240px, 45vmin, 500px);
   }
 
   .app-web .timer-time {
-    font-size: 72px;
-    letter-spacing: -2px;
-  }
-
-  .app-web .timer-display {
-    padding: 28px 0;
+    font-size: clamp(80px, 14vmin, 180px);
+    letter-spacing: -3px;
   }
 
   .app-web .timer-progress-svg {
-    width: 240px;
-    height: 240px;
+    width: clamp(240px, 45vmin, 500px);
+    height: clamp(240px, 45vmin, 500px);
   }
 
-  .app-web .view {
-    padding-left: 24px;
-    padding-right: 24px;
-    padding-bottom: 24px;
-  }
-}
-
-/* --- Desktop (900px+) --- */
-@media (min-width: 900px) {
-  .app-web-body {
-    padding: 40px 24px;
+  /* Focus content constrained for readability */
+  .app-web .focus-minimal {
+    max-width: 640px;
+    width: 100%;
   }
 
-  .app-web .app {
-    width: 420px;
-    min-height: 560px;
-    box-shadow: 0 8px 32px var(--shadow);
+  /* Verse card — readable width, centered */
+  .app-web .verse-card {
+    max-width: 680px;
+    width: 100%;
   }
 
-  .app-web .timer-time {
-    font-size: 80px;
-    font-weight: 200;
-    letter-spacing: -2px;
+  .app-web .verse-text {
+    font-size: 17px;
+    line-height: 1.75;
   }
 
-  .app-web .timer-display {
-    padding: 32px 0;
+  /* Action buttons — constrained, not full-viewport-width */
+  .app-web .idle-view .btn-primary,
+  .app-web .prefocus-view .btn-primary {
+    max-width: 400px;
+    width: 100%;
   }
 
-  .app-web .timer-progress-svg {
-    width: 260px;
-    height: 260px;
+  /* Idle supporting elements */
+  .app-web .idle-timer-preview {
+    max-width: 400px;
+    width: 100%;
   }
 
-  .app-web .view {
-    padding-left: 32px;
-    padding-right: 32px;
-    padding-bottom: 32px;
+  .app-web .quick-presets {
+    max-width: 640px;
+    width: 100%;
   }
 
-  /* Relax touch targets on desktop (cursor, not touch) */
+  /* Relax touch targets — cursor, not touch */
   .app-web .btn-primary,
   .app-web .btn-secondary {
     min-height: auto;
@@ -949,6 +981,49 @@ html, body {
     min-width: auto;
     min-height: auto;
     padding: 6px;
+  }
+}
+
+/* --- Desktop (900px+): larger timer --- */
+@media (min-width: 900px) {
+  .app-web .view {
+    padding: 64px 48px;
+  }
+
+  .app-web .timer-display {
+    min-height: clamp(300px, 50vmin, 560px);
+  }
+
+  .app-web .timer-time {
+    font-size: clamp(100px, 16vmin, 220px);
+    font-weight: 200;
+    letter-spacing: -4px;
+  }
+
+  .app-web .timer-progress-svg {
+    width: clamp(300px, 50vmin, 560px);
+    height: clamp(300px, 50vmin, 560px);
+  }
+
+  .app-web .verse-card {
+    max-width: 760px;
+  }
+
+  .app-web .verse-text {
+    font-size: 18px;
+    line-height: 1.8;
+  }
+
+  .app-web .view-header {
+    max-width: 840px;
+  }
+
+  .app-web .focus-minimal {
+    max-width: 720px;
+  }
+
+  .app-web .quick-presets {
+    max-width: 720px;
   }
 }
 
