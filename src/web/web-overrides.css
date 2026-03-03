@@ -6,8 +6,10 @@
    ============================================== */
 
 /* Reset html/body from the 360px extension popup default */
-html:has(.app-web) {
+html:has(.app-web),
+body:has(.app-web) {
   width: 100%;
+  min-height: 100vh;
 }
 
 .app-web-body {
@@ -107,16 +109,26 @@ html:has(.app-web) {
     padding-top: 48px;
   }
 
-  /* Focus / Break / PreFocus: fully centered */
+  /* Focus / PreFocus: fully centered */
   .app-web .focus-view,
-  .app-web .break-view,
   .app-web .prefocus-view {
     justify-content: center;
   }
 
-  /* Settings view: stretch, not centered */
+  /* Break view: top-aligned + scrollable — timer + verse can exceed viewport height */
+  .app-web .break-view {
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  /* Settings view: stretch + scrollable + constrained width */
   .app-web .settings-view {
     align-items: stretch;
+    overflow-y: auto;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
   }
 
   /* Timer scales with viewport using vmin (respects both axes) */
