@@ -19,10 +19,10 @@ const THEMES = [
 ];
 
 const COMPLETION_SOUNDS = [
-  { id: 'complete', label: 'Alert', file: 'complete.mp3' },
-  { id: 'extraterrestrial', label: 'Extraterrestrial', file: 'extraterrestrial-alert.mp3' },
-  { id: 'dragon', label: 'Dragon', file: 'dragon-studio-alert.mp3' },
-  { id: 'alert-sound', label: 'Alert Sound', file: 'alert-sound.mp3' },
+  { id: 'praise', label: "Children's Praise", file: 'jesuschristisgod-children-saying-yay-praise-and-worship-jesus-299607.mp3' },
+  { id: 'bell-1', label: 'Temple Bell 1', file: 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-1-241683.mp3' },
+  { id: 'bell-3', label: 'Temple Bell 3', file: 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-3-241681.mp3' },
+  { id: 'bell-4', label: 'Temple Bell 4', file: 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-4-241680.mp3' },
 ];
 
 export default function SettingsView({ settings, updateSettings, customVerses = [], persistCustomVerses, onClose }) {

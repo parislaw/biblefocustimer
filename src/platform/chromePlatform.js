@@ -118,8 +118,8 @@ export const chromePlatform = {
 
   getCompletionSoundUrl(settings) {
     if (typeof chrome === 'undefined' || !chrome.runtime) return '';
-    const SOUND_FILES = { complete: 'complete.mp3', extraterrestrial: 'extraterrestrial-alert.mp3', dragon: 'dragon-studio-alert.mp3', 'alert-sound': 'alert-sound.mp3' };
-    const id = settings?.completionSoundId || 'complete';
+    const SOUND_FILES = { praise: 'jesuschristisgod-children-saying-yay-praise-and-worship-jesus-299607.mp3', 'bell-1': 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-1-241683.mp3', 'bell-3': 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-3-241681.mp3', 'bell-4': 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-4-241680.mp3' };
+    const id = settings?.completionSoundId || 'praise';
     const file = SOUND_FILES[id] || SOUND_FILES.complete;
     return chrome.runtime.getURL('sounds/' + file);
   },

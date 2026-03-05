@@ -203,15 +203,15 @@ const OFFSCREEN_REASON = 'AUDIO_PLAYBACK';
 const OFFSCREEN_JUSTIFICATION = 'Play completion sound when focus or break timer ends';
 
 const SOUND_FILES = {
-  complete: 'complete.mp3',
-  extraterrestrial: 'extraterrestrial-alert.mp3',
-  dragon: 'dragon-studio-alert.mp3',
-  'alert-sound': 'alert-sound.mp3',
+  praise: 'jesuschristisgod-children-saying-yay-praise-and-worship-jesus-299607.mp3',
+  'bell-1': 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-1-241683.mp3',
+  'bell-3': 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-3-241681.mp3',
+  'bell-4': 'kalsstockmedia-church-temple-bell-gong-dong-sound-effect-4-241680.mp3',
 };
 
 function getCompletionSoundUrl(settings) {
-  const id = settings.completionSoundId || 'complete';
-  const file = SOUND_FILES[id] || SOUND_FILES.complete;
+  const id = settings.completionSoundId || 'praise';
+  const file = SOUND_FILES[id] || SOUND_FILES.praise;
   return chrome.runtime.getURL('sounds/' + file);
 }
 
