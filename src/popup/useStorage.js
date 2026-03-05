@@ -8,7 +8,7 @@ export const DEFAULT_SETTINGS = {
   cyclesBeforeLongBreak: 4,
   autoStartNext: false,
   playCompletionSound: true,
-  completionSoundId: 'complete',
+  completionSoundId: 'praise',
   completionSoundVolume: 80,
   stickyNotification: true,
   scriptureEnabled: true,

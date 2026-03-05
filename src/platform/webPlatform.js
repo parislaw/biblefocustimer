@@ -192,7 +192,7 @@ export const webPlatform = {
   },
 
   getCompletionSoundUrl(settings) {
-    const id = settings?.completionSoundId || 'complete';
+    const id = settings?.completionSoundId || 'praise';
     const file = SOUND_FILES[id] || SOUND_FILES.complete;
     return './sounds/' + file;
   },

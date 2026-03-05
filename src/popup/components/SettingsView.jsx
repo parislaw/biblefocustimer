@@ -248,7 +248,7 @@ export default function SettingsView({ settings, updateSettings, customVerses = 
                 <span id="completion-sound-label">Completion sound</span>
                 <select
                   id="completion-sound-select"
-                  value={settings.completionSoundId || 'complete'}
+                  value={settings.completionSoundId || 'praise'}
                   onChange={(e) => handleChange('completionSoundId', e.target.value)}
                   aria-labelledby="completion-sound-label"
                 >
