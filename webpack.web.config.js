@@ -8,7 +8,7 @@ module.exports = {
     web: './src/web/index.jsx',
   },
   output: {
-    path: path.resolve(__dirname, 'dist-web'),
+    path: path.resolve(__dirname, 'docs/app'),
     filename: '[name].js',
     clean: true,
     publicPath: './',
